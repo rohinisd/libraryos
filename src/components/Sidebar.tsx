@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { logout } from "@/app/(auth)/actions";
 import clsx from "clsx";
+import { Logo } from "@/components/Logo";
 
 const NAV_GROUP_1 = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutGrid },
@@ -45,12 +46,7 @@ export function Sidebar() {
           so this is the only way to reach it there. */}
       <div className="sticky top-0 z-30 flex items-center justify-between border-b border-black/5 bg-white px-4 py-3 sm:hidden">
         <div className="flex items-center gap-2">
-          <div className="grid h-8 w-8 shrink-0 grid-cols-2 gap-0.5 rounded-lg bg-primary p-1.5">
-            <span className="rounded-sm bg-white/80" />
-            <span className="rounded-sm bg-white/80" />
-            <span className="rounded-sm bg-white/80" />
-            <span className="rounded-sm bg-white/80" />
-          </div>
+          <Logo size={32} />
           <span className="text-base font-extrabold text-text-primary">LIBRARYOS</span>
         </div>
         <button
@@ -80,12 +76,7 @@ export function Sidebar() {
       >
         <div className="flex items-center justify-between px-5 py-6">
           <div className="flex items-center gap-2 overflow-hidden">
-            <div className="grid h-9 w-9 shrink-0 grid-cols-2 gap-0.5 rounded-lg bg-primary p-1.5">
-              <span className="rounded-sm bg-white/80" />
-              <span className="rounded-sm bg-white/80" />
-              <span className="rounded-sm bg-white/80" />
-              <span className="rounded-sm bg-white/80" />
-            </div>
+            <Logo size={36} />
             {!collapsed && (
               <span className="whitespace-nowrap text-lg font-extrabold text-text-primary">
                 LIBRARYOS

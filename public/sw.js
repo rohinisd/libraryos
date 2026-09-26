@@ -1,7 +1,7 @@
 // v2: v1 cached authenticated HTML/data responses. That is unsafe for a shared
 // phone (student PII could outlive logout), so v2 only caches static assets and
 // activation deletes every v1 entry.
-const CACHE_NAME = "libraryos-static-v2";
+const CACHE_NAME = "libraryos-static-v3";
 const PRECACHE = ["/offline.html", "/manifest.json", "/icon.svg", "/icons/icon-192.png"];
 
 self.addEventListener("install", (event) => {

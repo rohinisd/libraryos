@@ -1,11 +1,13 @@
 import Link from "next/link";
 import { RegisterForm } from "./RegisterForm";
+import { Logo } from "@/components/Logo";
 
 export default function RegisterPage() {
   return (
     <main className="min-h-screen flex items-center justify-center bg-login-bg px-4 py-12">
       <div className="w-full max-w-[520px] rounded-3xl bg-login-card p-10">
-        <div className="text-center">
+        <div className="flex flex-col items-center text-center">
+          <Logo size={56} className="mb-4" />
           <h1 className="text-2xl font-bold">
             <span className="text-white">Library</span>
             <span className="text-green">OS</span>
