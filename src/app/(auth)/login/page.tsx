@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { LoginForm } from "./LoginForm";
+import { InstallInstructions } from "@/components/InstallInstructions";
 
 export default async function LoginPage({ searchParams }: PageProps<"/login">) {
   const params = await searchParams;
@@ -46,6 +47,8 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
             Create Free Library
           </Link>
         </div>
+
+        <InstallInstructions />
       </div>
     </main>
   );
