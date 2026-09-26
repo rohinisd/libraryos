@@ -1,0 +1,92 @@
+@import "tailwindcss";
+
+:root {
+  --color-app-bg: #f5f6fa;
+  --color-login-bg: #060b28;
+  --color-login-card: #141929;
+
+  --color-primary: #3b4fd8;
+  --color-primary-light: #4f5bd5;
+  --color-purple: #8b5cf6;
+
+  --color-text-primary: #0d0d1a;
+  --color-text-secondary: #6b7280;
+  --color-text-muted: #9ca3af;
+
+  --color-green: #10b981;
+  --color-orange: #f97316;
+  --color-blue-accent: #3b82f6;
+  --color-error: #ef4444;
+  --color-teal: #0f766e;
+
+  --color-badge-green-bg: #d1fae5;
+  --color-badge-green-text: #059669;
+
+  --shadow-card: 0 4px 16px rgba(0, 0, 0, 0.06);
+}
+
+@theme inline {
+  --color-app-bg: var(--color-app-bg);
+  --color-login-bg: var(--color-login-bg);
+  --color-login-card: var(--color-login-card);
+
+  --color-primary: var(--color-primary);
+  --color-primary-light: var(--color-primary-light);
+  --color-purple: var(--color-purple);
+
+  --color-text-primary: var(--color-text-primary);
+  --color-text-secondary: var(--color-text-secondary);
+  --color-text-muted: var(--color-text-muted);
+
+  --color-green: var(--color-green);
+  --color-orange: var(--color-orange);
+  --color-blue-accent: var(--color-blue-accent);
+  --color-error: var(--color-error);
+  --color-teal: var(--color-teal);
+
+  --color-badge-green-bg: var(--color-badge-green-bg);
+  --color-badge-green-text: var(--color-badge-green-text);
+
+  --shadow-card: var(--shadow-card);
+
+  --font-sans: var(--font-inter);
+}
+
+body {
+  background: var(--color-app-bg);
+  color: var(--color-text-primary);
+  font-family: var(--font-sans), system-ui, sans-serif;
+}
+
+@layer utilities {
+  .card {
+    background: #fff;
+    border-radius: 1rem;
+    box-shadow: var(--shadow-card);
+  }
+
+  .btn-pill {
+    border-radius: 9999px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+  }
+
+  .field-label {
+    font-size: 0.6875rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-primary-light);
+  }
+
+  .gradient-text {
+    background-image: linear-gradient(90deg, var(--color-primary), var(--color-purple));
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+  }
+
+  .gradient-btn {
+    background-image: linear-gradient(90deg, var(--color-primary), var(--color-purple));
+  }
+}

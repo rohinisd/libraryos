@@ -1,0 +1,229 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  ADMIN
+  MANAGER
+  STAFF
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+enum StudentStatus {
+  ACTIVE
+  INACTIVE
+  TRIAL
+}
+
+enum ShiftStatus {
+  ACTIVE
+  INACTIVE
+}
+
+// One row per library/study-hall business — the tenant boundary.
+// Every other model hangs off libraryId so tenants never see each other's data.
+model Library {
+  id               String    @id @default(cuid())
+  businessName     String
+  businessAddress  String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  // Null = no LibraryOS subscription gate applied yet (platform admin hasn't
+  // set one). Only enforced once a platform admin records a payment here —
+  // see requireSession() in lib/session.ts for where this is checked.
+  subscriptionExpiresAt DateTime?
+
+  users                User[]
+  students             Student[]
+  seats                Seat[]
+  shifts               Shift[]
+  payments             Payment[]
+  expenses             Expense[]
+  subscriptionPayments SubscriptionPayment[]
+}
+
+// You (the LibraryOS operator), not a library's own staff — a separate
+// identity space with no libraryId, since it must see across every tenant.
+model PlatformAdmin {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+
+  recordedPayments SubscriptionPayment[]
+}
+
+// A manually-logged LibraryOS subscription payment from a library owner
+// (cash/UPI/bank transfer — no payment gateway). Each row pushes the
+// library's subscriptionExpiresAt forward; see recordSubscriptionPayment.
+model SubscriptionPayment {
+  id          String   @id @default(cuid())
+  amount      Int
+  method      String   @default("UPI")
+  monthsAdded Int
+  note        String?
+  createdAt   DateTime @default(now())
+
+  libraryId String
+  library   Library @relation(fields: [libraryId], references: [id], onDelete: Cascade)
+
+  recordedById String
+  recordedBy   PlatformAdmin @relation(fields: [recordedById], references: [id])
+
+  @@index([libraryId])
+}
+
+model User {
+  id            String   @id @default(cuid())
+  name          String
+  email         String   @unique
+  passwordHash  String
+  // Encrypted at rest (see lib/db.ts); contactNumberHash is the login/reset lookup index.
+  contactNumber     String?
+  contactNumberHash String?
+  role          Role     @default(ADMIN)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  resetTokenHash      String?
+  resetTokenExpiresAt DateTime?
+
+  libraryId String
+  library   Library @relation(fields: [libraryId], references: [id], onDelete: Cascade)
+
+  paymentsAdded Payment[] @relation("PaymentAddedBy")
+
+  @@index([libraryId])
+  @@index([contactNumberHash])
+}
+
+model Student {
+  id             String        @id @default(cuid())
+  fullName       String
+  fatherName     String?
+  // `phone` and `aadhaarNumber` hold AES-256-GCM ciphertext (see lib/field-crypto.ts);
+  // the db client in lib/db.ts encrypts on write and decrypts on read automatically.
+  // `phoneHash` is a keyed blind index used only for exact full-number search.
+  phone          String
+  phoneHash      String?
+  entryDate      DateTime      @default(now())
+  aadhaarNumber  String?
+  gender         Gender        @default(MALE)
+  address        String?
+  notes          String?
+  photoUrl       String?
+  status         StudentStatus @default(ACTIVE)
+  monthlyFees    Int           @default(0)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  libraryId String
+  library   Library @relation(fields: [libraryId], references: [id], onDelete: Cascade)
+
+  seatId String? @unique
+  seat   Seat?   @relation(fields: [seatId], references: [id])
+
+  shifts   StudentShift[]
+  payments Payment[]
+
+  @@index([libraryId])
+  @@index([libraryId, status])
+  @@index([libraryId, phoneHash])
+}
+
+// A physical, numbered seat. 1:1 with a student while occupied (kept simple
+// on purpose — see README "Known simplifications" re: per-shift seat sharing).
+model Seat {
+  id         String   @id @default(cuid())
+  seatNumber Int
+  floor      Int      @default(1)
+  section    String   @default("0")
+  createdAt  DateTime @default(now())
+
+  libraryId String
+  library   Library @relation(fields: [libraryId], references: [id], onDelete: Cascade)
+
+  student Student?
+
+  @@unique([libraryId, floor, seatNumber])
+  @@index([libraryId])
+}
+
+model Shift {
+  id           String      @id @default(cuid())
+  name         String
+  startTime    String // "HH:MM", 24h
+  endTime      String
+  monthlyFees  Int
+  isSystemSlot Boolean     @default(false)
+  status       ShiftStatus @default(ACTIVE)
+  createdAt    DateTime    @default(now())
+
+  libraryId String
+  library   Library @relation(fields: [libraryId], references: [id], onDelete: Cascade)
+
+  students StudentShift[]
+
+  @@index([libraryId])
+}
+
+// Join table: a student can hold multiple shift slots at once (per spec §8 step 2).
+model StudentShift {
+  id     String      @id @default(cuid())
+  status ShiftStatus @default(ACTIVE)
+
+  studentId String
+  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  shiftId String
+  shift   Shift  @relation(fields: [shiftId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, shiftId])
+}
+
+model Payment {
+  id          String   @id @default(cuid())
+  amount      Int
+  startDate   DateTime
+  endDate     DateTime
+  paymentMode String   @default("CASH")
+  paidAt      DateTime @default(now())
+
+  studentId String
+  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  addedById String
+  addedBy   User   @relation("PaymentAddedBy", fields: [addedById], references: [id])
+
+  libraryId String
+  library   Library @relation(fields: [libraryId], references: [id], onDelete: Cascade)
+
+  @@index([libraryId])
+  @@index([libraryId, paidAt])
+}
+
+model Expense {
+  id          String   @id @default(cuid())
+  description String
+  amount      Int
+  month       Int
+  year        Int
+  createdAt   DateTime @default(now())
+
+  libraryId String
+  library   Library @relation(fields: [libraryId], references: [id], onDelete: Cascade)
+
+  @@index([libraryId, year, month])
+}
