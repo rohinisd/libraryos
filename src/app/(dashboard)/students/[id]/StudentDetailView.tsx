@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Pencil, Power, Trash2, Armchair, X } from "lucide-react";
+import { StudentContactActions } from "@/components/StudentContactActions";
 import type { Student, Seat, StudentShift, Shift, Payment } from "@/generated/prisma/client";
 import { assignSeat, deleteStudent, setStudentStatus, unassignSeat } from "../actions";
 import { StudentEditForm } from "./StudentEditForm";
@@ -80,6 +81,12 @@ export function StudentDetailView({
           </p>
 
           <div className="mt-4 flex flex-wrap gap-2">
+            <StudentContactActions
+              variant="button"
+              fullName={student.fullName}
+              phone={student.phone}
+              monthlyFees={student.monthlyFees}
+            />
             <button
               onClick={() => setEditing(true)}
               className="btn-pill flex items-center gap-1.5 bg-primary px-4 py-2 text-xs font-bold uppercase text-white"

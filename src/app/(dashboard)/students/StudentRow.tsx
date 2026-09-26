@@ -3,6 +3,7 @@
 import { useTransition } from "react";
 import Link from "next/link";
 import { Trash2, Power, Eye } from "lucide-react";
+import { StudentContactActions } from "@/components/StudentContactActions";
 import { deleteStudent, setStudentStatus } from "./actions";
 
 type StudentRowData = {
@@ -56,6 +57,11 @@ export function StudentRow({ student }: { student: StudentRowData }) {
       <span className="text-sm font-bold text-text-primary">₹{student.monthlyFees}</span>
 
       <div className="ml-auto flex items-center gap-3 text-gray-400">
+        <StudentContactActions
+          fullName={student.fullName}
+          phone={student.phone}
+          monthlyFees={student.monthlyFees}
+        />
         <Link href={`/students/${student.id}`} className="hover:text-primary" aria-label="View student">
           <Eye size={16} />
         </Link>
