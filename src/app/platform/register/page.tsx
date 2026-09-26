@@ -2,8 +2,13 @@ import Link from "next/link";
 import { db } from "@/lib/db";
 import { PlatformRegisterForm } from "./PlatformRegisterForm";
 
+// Reads the DB on every request; without this Next would prerender it at build
+// time and freeze whichever state (form vs "already set up") it saw then.
+export const dynamic = "force-dynamic";
+
 export default async function PlatformRegisterPage() {
   const existingCount = await db.platformAdmin.count();
+  const needsSetupCode = process.env.NODE_ENV === "production" || !!process.env.PLATFORM_SETUP_CODE;
 
   if (existingCount > 0) {
     return (
@@ -37,7 +42,7 @@ export default async function PlatformRegisterPage() {
           </p>
         </div>
 
-        <PlatformRegisterForm />
+        <PlatformRegisterForm needsSetupCode={needsSetupCode} />
       </div>
     </main>
   );

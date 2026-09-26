@@ -4,7 +4,7 @@ import { useActionState } from "react";
 import { registerPlatformAdmin } from "../actions";
 import type { ActionState } from "@/lib/validation";
 
-export function PlatformRegisterForm() {
+export function PlatformRegisterForm({ needsSetupCode }: { needsSetupCode: boolean }) {
   const [state, formAction, pending] = useActionState<ActionState, FormData>(
     registerPlatformAdmin,
     null,
@@ -61,6 +61,25 @@ export function PlatformRegisterForm() {
           </p>
         )}
       </div>
+
+      {needsSetupCode && (
+        <div>
+          <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-gray-400">
+            Setup Code
+          </label>
+          <input
+            name="setupCode"
+            type="password"
+            autoComplete="off"
+            className="w-full rounded-xl border border-transparent bg-white px-4 py-3 text-sm text-text-primary outline-none focus:border-primary"
+          />
+          {state?.fieldErrors?.setupCode && (
+            <p className="mt-1 text-[11px] font-semibold uppercase text-error">
+              {state.fieldErrors.setupCode}
+            </p>
+          )}
+        </div>
+      )}
 
       {state?.formError && (
         <p className="rounded-lg bg-error/10 px-3 py-2 text-center text-[12px] font-semibold uppercase text-error">
