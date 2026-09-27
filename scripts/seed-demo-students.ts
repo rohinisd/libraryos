@@ -252,11 +252,13 @@ function build(shiftFees: Map<string, number>): Built[] {
       }
       case "LAPSED": {
         plan = paymentChain(-int(1, 6), int(2, 5));
+        wantsSeat = false; // the app frees a seat as soon as coverage lapses
         break;
       }
       case "DEFAULTER": {
         plan = paymentChain(-int(10, 70), int(1, 4));
         if (rng() < 0.6) notes = pick(["Promised to pay this week", "Not picking up calls", "Exam season, will pay after results"]);
+        wantsSeat = false; // the app frees a seat as soon as coverage lapses
         break;
       }
       case "NEW_UNPAID": {

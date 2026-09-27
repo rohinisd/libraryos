@@ -5,10 +5,13 @@ import { phoneBlindIndex } from "@/lib/field-crypto";
 import type { Prisma } from "@/generated/prisma/client";
 
 export const PAGE_SIZE = 12;
+// Gallery cards are compact, so more fit per page.
+export const GALLERY_PAGE_SIZE = 24;
 const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
 const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
 
 export type StudentTab =
+  | "all"
   | "recent"
   | "paid"
   | "dues"
@@ -38,19 +41,25 @@ function baseWhere(libraryId: string, search?: string): Prisma.StudentWhereInput
 async function paginateSimple(
   where: Prisma.StudentWhereInput,
   page: number,
+  pageSize: number,
   orderBy: Prisma.StudentOrderByWithRelationInput = { createdAt: "desc" },
 ) {
   const [students, totalCount] = await Promise.all([
     db.student.findMany({
       where,
       orderBy,
-      skip: (page - 1) * PAGE_SIZE,
-      take: PAGE_SIZE,
-      include: { seat: true, shifts: { include: { shift: true } } },
+      skip: (page - 1) * pageSize,
+      take: pageSize,
+      include: {
+        seat: true,
+        shifts: { include: { shift: true } },
+        // Latest coverage window, so cards can show a fee-status badge.
+        payments: { orderBy: { endDate: "desc" }, take: 1 },
+      },
     }),
     db.student.count({ where }),
   ]);
-  return { students, totalCount, page, pageSize: PAGE_SIZE };
+  return { students, totalCount, page, pageSize };
 }
 
 // Tabs like "dues"/"paid" key off each student's *latest* payment coverage window,
@@ -59,6 +68,7 @@ async function paginateSimple(
 async function paginateByPaymentStatus(
   where: Prisma.StudentWhereInput,
   page: number,
+  pageSize: number,
   predicate: (latestPaymentEndDate: Date | undefined, now: Date) => boolean,
 ) {
   const candidates = await db.student.findMany({
@@ -74,52 +84,58 @@ async function paginateByPaymentStatus(
   const now = new Date();
   const filtered = candidates.filter((s) => predicate(s.payments[0]?.endDate, now));
   const totalCount = filtered.length;
-  const students = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const students = filtered.slice((page - 1) * pageSize, page * pageSize);
 
-  return { students, totalCount, page, pageSize: PAGE_SIZE };
+  return { students, totalCount, page, pageSize };
 }
 
 export function getStudents(
   libraryId: string,
-  opts: { tab?: StudentTab; search?: string; page?: number },
+  opts: { tab?: StudentTab; search?: string; page?: number; pageSize?: number },
 ) {
   const page = Math.max(1, opts.page ?? 1);
+  const pageSize = opts.pageSize ?? PAGE_SIZE;
   const search = opts.search?.trim();
-  const tab = opts.tab ?? "recent";
+  const tab = opts.tab ?? "all";
   const where = baseWhere(libraryId, search);
 
   switch (tab) {
     case "trial":
-      return paginateSimple({ ...where, status: "TRIAL" }, page);
+      return paginateSimple({ ...where, status: "TRIAL" }, page, pageSize);
     case "active":
-      return paginateSimple({ ...where, status: "ACTIVE" }, page);
+      return paginateSimple({ ...where, status: "ACTIVE" }, page, pageSize);
     case "inactive":
-      return paginateSimple({ ...where, status: "INACTIVE" }, page);
+      return paginateSimple({ ...where, status: "INACTIVE" }, page, pageSize);
     case "unallocated":
-      return paginateSimple({ ...where, seatId: null }, page);
+      return paginateSimple({ ...where, seatId: null }, page, pageSize);
     case "paid":
-      return paginateByPaymentStatus(where, page, (end, now) => !!end && end >= now);
+      return paginateByPaymentStatus(where, page, pageSize, (end, now) => !!end && end >= now);
     case "dues":
-      return paginateByPaymentStatus(where, page, (end, now) => !end || end < now);
+      return paginateByPaymentStatus(where, page, pageSize, (end, now) => !end || end < now);
     case "remaining":
       return paginateByPaymentStatus(
         where,
         page,
+        pageSize,
         (end, now) => !!end && end >= now && end.getTime() - now.getTime() <= SEVEN_DAYS_MS,
       );
     case "defaulter":
       return paginateByPaymentStatus(
         where,
         page,
+        pageSize,
         (end, now) => !!end && now.getTime() - end.getTime() > SEVEN_DAYS_MS,
       );
     case "recent":
-    default:
       return paginateSimple(
         { ...where, entryDate: { gte: new Date(Date.now() - THIRTY_DAYS_MS) } },
         page,
+        pageSize,
         { entryDate: "desc" },
       );
+    case "all":
+    default:
+      return paginateSimple(where, page, pageSize, { fullName: "asc" });
   }
 }
 
