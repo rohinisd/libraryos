@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import { RegisterServiceWorker } from "@/components/RegisterServiceWorker";
+import { VersionWatcher } from "@/components/VersionWatcher";
 import "./globals.css";
 
 const inter = Inter({
@@ -39,6 +40,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="min-h-full flex flex-col bg-app-bg text-text-primary">
         {children}
         <RegisterServiceWorker />
+        <VersionWatcher />
       </body>
     </html>
   );
