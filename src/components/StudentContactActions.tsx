@@ -64,17 +64,17 @@ export function StudentContactActions({
 
   const actions = [
     {
+      label: "Send Reminder",
+      href: `https://wa.me/91${phone}?text=${encodeURIComponent(message)}`,
+      Icon: MessageCircle,
+      style: "bg-badge-green-text text-white",
+      external: true,
+    },
+    {
       label: "Call",
       href: `tel:${phone}`,
       Icon: Phone,
       style: "bg-badge-green-bg text-badge-green-text",
-    },
-    {
-      label: "WhatsApp",
-      href: `https://wa.me/91${phone}?text=${encodeURIComponent(message)}`,
-      Icon: MessageCircle,
-      style: "bg-badge-green-bg text-badge-green-text",
-      external: true,
     },
     {
       label: "SMS",
