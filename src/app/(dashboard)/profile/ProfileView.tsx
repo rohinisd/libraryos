@@ -91,7 +91,7 @@ function Row({
       </div>
       <div>
         <p className="field-label">{label}</p>
-        <p className="mt-0.5 text-sm font-semibold text-text-primary">{value}</p>
+        <p className="mt-0.5 whitespace-pre-line text-sm font-semibold text-text-primary">{value}</p>
       </div>
     </div>
   );

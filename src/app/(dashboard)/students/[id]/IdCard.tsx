@@ -82,7 +82,10 @@ export const IdCard = forwardRef<HTMLDivElement, { data: IdCardData }>(function 
       </div>
 
       {data.businessAddress && (
-        <div style={{ background: "#3B4FD8" }} className="px-6 py-2.5 text-center text-[11px] font-semibold text-white">
+        <div
+          style={{ background: "#3B4FD8" }}
+          className="whitespace-pre-line px-6 py-3 text-center text-[11px] font-semibold leading-relaxed text-white"
+        >
           {data.businessAddress}
         </div>
       )}

@@ -25,7 +25,7 @@ export function ProfileEditForm({
   return (
     <form action={formAction} className="space-y-4">
       <Field label="Business Name" name="businessName" defaultValue={defaults.businessName} error={state?.fieldErrors?.businessName} />
-      <Field label="Business Address" name="businessAddress" defaultValue={defaults.businessAddress} />
+      <AddressField label="Business Address" name="businessAddress" defaultValue={defaults.businessAddress} />
       <Field label="Name" name="name" defaultValue={defaults.name} error={state?.fieldErrors?.name} />
       <Field label="Email" name="email" type="email" defaultValue={defaults.email} error={state?.fieldErrors?.email} />
       <Field
@@ -58,6 +58,32 @@ export function ProfileEditForm({
         </button>
       </div>
     </form>
+  );
+}
+
+// Full postal address (building, cross road, landmark) needs real line breaks —
+// this is also what shows on the ID card footer, so a single-line input isn't
+// enough. Kept as one field, per the owner's own address entry.
+function AddressField({
+  label,
+  name,
+  defaultValue,
+}: {
+  label: string;
+  name: string;
+  defaultValue: string;
+}) {
+  return (
+    <div>
+      <label className="field-label">{label}</label>
+      <textarea
+        name={name}
+        defaultValue={defaultValue}
+        rows={3}
+        placeholder={"e.g. C B Nagar 4th Cross, Lingayath Bhavan back side, 580001\nNear Durga Dharshini hotel"}
+        className={`mt-1.5 resize-none ${inputClass}`}
+      />
+    </div>
   );
 }
 

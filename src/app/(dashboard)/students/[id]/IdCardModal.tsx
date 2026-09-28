@@ -30,7 +30,7 @@ export function IdCardModal({ data, trigger }: { data: IdCardData; trigger: Reac
   const [busy, setBusy] = useState<"share" | "download" | null>(null);
   const [error, setError] = useState<string | null>(null);
   const cardRef = useRef<HTMLDivElement>(null);
-  const shareSupported = useMemo(canShareFiles, []);
+  const shareSupported = useMemo(() => canShareFiles(), []);
 
   const fileName = `${data.fullName.trim().replace(/\s+/g, "-").toLowerCase()}-id-card.png`;
 
