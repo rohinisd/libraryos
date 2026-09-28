@@ -47,7 +47,9 @@ export function Sidebar() {
       <div className="sticky top-0 z-30 flex items-center justify-between border-b border-black/5 bg-white px-4 py-3 sm:hidden">
         <div className="flex items-center gap-2">
           <Logo size={32} />
-          <span className="text-base font-extrabold text-text-primary">LIBRARYOS</span>
+          <span className="text-base font-extrabold text-text-primary">
+            Library<span className="text-primary">OS</span>
+          </span>
         </div>
         <button
           type="button"
@@ -79,7 +81,7 @@ export function Sidebar() {
             <Logo size={36} />
             {!collapsed && (
               <span className="whitespace-nowrap text-lg font-extrabold text-text-primary">
-                LIBRARYOS
+                Library<span className="text-primary">OS</span>
               </span>
             )}
           </div>

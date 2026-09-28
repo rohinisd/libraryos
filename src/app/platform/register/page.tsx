@@ -34,7 +34,7 @@ export default async function PlatformRegisterPage() {
       <div className="w-full max-w-[440px] rounded-3xl bg-login-card p-10">
         <div className="text-center">
           <p className="text-[11px] font-semibold tracking-[0.15em] text-gray-400">
-            LIBRARYOS PLATFORM
+            LibraryOS Platform
           </p>
           <h1 className="mt-2 text-2xl font-bold text-white">Create Operator Account</h1>
           <p className="mt-1 text-sm text-gray-400">
