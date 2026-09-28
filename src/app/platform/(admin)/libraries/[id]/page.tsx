@@ -3,6 +3,8 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { getLibraryWithSubscriptionPayments } from "@/lib/queries/platform";
 import { RecordPaymentModal } from "../RecordPaymentModal";
+import { PauseLibraryButton } from "../PauseLibraryButton";
+import { ResetPasswordModal } from "../ResetPasswordModal";
 
 const dateFmt = new Intl.DateTimeFormat("en-IN", { day: "2-digit", month: "short", year: "numeric" });
 const inr = new Intl.NumberFormat("en-IN", { maximumFractionDigits: 0 });
@@ -40,7 +42,11 @@ export default async function PlatformLibraryDetailPage({
             {dateFmt.format(library.createdAt)}
           </p>
           <p className="mt-2 text-sm font-semibold">
-            {library.subscriptionExpiresAt ? (
+            {library.suspended ? (
+              <span className="text-error">
+                Paused{library.suspendedAt ? ` since ${dateFmt.format(library.suspendedAt)}` : ""}
+              </span>
+            ) : library.subscriptionExpiresAt ? (
               <span className={expired ? "text-error" : "text-green"}>
                 {expired ? "Expired" : "Active until"} {dateFmt.format(library.subscriptionExpiresAt)}
               </span>
@@ -49,7 +55,38 @@ export default async function PlatformLibraryDetailPage({
             )}
           </p>
         </div>
-        <RecordPaymentModal libraryId={library.id} libraryName={library.businessName} />
+        <div className="flex items-center gap-2">
+          <RecordPaymentModal libraryId={library.id} libraryName={library.businessName} />
+          <PauseLibraryButton
+            libraryId={library.id}
+            libraryName={library.businessName}
+            suspended={library.suspended}
+          />
+        </div>
+      </div>
+
+      <div className="card p-0">
+        <h2 className="border-b border-black/5 px-6 py-4 text-lg font-bold text-text-primary">
+          Staff Accounts
+        </h2>
+        <div className="divide-y divide-black/5">
+          {library.users.map((user) => (
+            <div key={user.id} className="flex items-center justify-between px-6 py-3 text-sm">
+              <div>
+                <p className="font-semibold text-text-primary">
+                  {user.name} <span className="text-text-muted">· {user.role}</span>
+                </p>
+                <p className="text-text-secondary">{user.email}</p>
+              </div>
+              <ResetPasswordModal
+                userId={user.id}
+                libraryId={library.id}
+                userName={user.name}
+                userEmail={user.email}
+              />
+            </div>
+          ))}
+        </div>
       </div>
 
       <div className="card p-0">

@@ -4,14 +4,8 @@ import { useActionState, useState } from "react";
 import { Plus, RefreshCw } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
 import { createLibraryAsPlatformAdmin } from "./actions";
+import { generatePassword } from "@/lib/generate-password";
 import type { ActionState } from "@/lib/validation";
-
-function generatePassword() {
-  // Readable but not guessable: two short words + a number, e.g. "River-Falcon-482".
-  const words = ["River", "Falcon", "Maple", "Comet", "Harbor", "Cedar", "Delta", "Ember", "Willow", "Granite"];
-  const pick = () => words[Math.floor(Math.random() * words.length)];
-  return `${pick()}-${pick()}-${Math.floor(100 + Math.random() * 900)}`;
-}
 
 const inputClass =
   "mt-1.5 w-full rounded-xl bg-[#F8F9FF] px-3.5 py-2.5 text-sm outline-none focus:border focus:border-primary";

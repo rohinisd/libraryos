@@ -180,6 +180,10 @@ export const recordSubscriptionPaymentSchema = z.object({
   note: z.string().optional(),
 });
 
+export const platformResetPasswordSchema = z.object({
+  password: z.string().min(6, "PASSWORD MUST BE AT LEAST 6 CHARACTERS"),
+});
+
 export type ActionState = {
   formError?: string;
   fieldErrors?: Record<string, string>;

@@ -25,16 +25,17 @@ export async function getSession(): Promise<SessionPayload | null> {
 
 // Use inside a page/layout Server Component to enforce auth in addition to proxy.ts.
 // Also gates on the library's LibraryOS subscription (set manually by a platform
-// admin, not a payment gateway — see lib/platform-session.ts) so a lapsed
-// library gets bounced to /subscription-expired instead of the dashboard.
+// admin, not a payment gateway — see lib/platform-session.ts): a manual pause
+// bounces to /account-paused, a lapsed subscription to /subscription-expired.
 export async function requireSession(): Promise<SessionPayload> {
   const session = await getSession();
   if (!session) redirect("/login");
 
   const library = await db.library.findUnique({
     where: { id: session.libraryId },
-    select: { subscriptionExpiresAt: true },
+    select: { subscriptionExpiresAt: true, suspended: true },
   });
+  if (library?.suspended) redirect("/account-paused");
   if (library?.subscriptionExpiresAt && library.subscriptionExpiresAt < new Date()) {
     redirect("/subscription-expired");
   }

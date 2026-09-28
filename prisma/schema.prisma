@@ -44,6 +44,13 @@ model Library {
   // see requireSession() in lib/session.ts for where this is checked.
   subscriptionExpiresAt DateTime?
 
+  // Manual kill switch, independent of subscriptionExpiresAt — lets a platform
+  // admin cut access immediately (e.g. a failed/disputed payment) without
+  // waiting for or touching the expiry date. Checked in requireSession()
+  // before the expiry check.
+  suspended   Boolean   @default(false)
+  suspendedAt DateTime?
+
   // Next per-library student ID number (the "#1", "#2"... shown on ID cards).
   // Incremented atomically in createStudent's transaction; never reused even
   // if a student is deleted, so an old ID card can never point at someone else.

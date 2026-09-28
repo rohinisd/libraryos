@@ -11,6 +11,7 @@ export function getLibrariesWithSubscriptionStatus() {
       businessAddress: true,
       createdAt: true,
       subscriptionExpiresAt: true,
+      suspended: true,
       _count: { select: { students: true, users: true } },
     },
   });
@@ -25,10 +26,16 @@ export function getLibraryWithSubscriptionPayments(libraryId: string) {
       businessAddress: true,
       createdAt: true,
       subscriptionExpiresAt: true,
+      suspended: true,
+      suspendedAt: true,
       _count: { select: { students: true, users: true } },
       subscriptionPayments: {
         orderBy: { createdAt: "desc" },
         include: { recordedBy: { select: { name: true } } },
+      },
+      users: {
+        orderBy: { createdAt: "asc" },
+        select: { id: true, name: true, email: true, role: true },
       },
     },
   });

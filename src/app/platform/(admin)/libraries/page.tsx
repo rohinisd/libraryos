@@ -2,10 +2,12 @@ import Link from "next/link";
 import { getLibrariesWithSubscriptionStatus } from "@/lib/queries/platform";
 import { RecordPaymentModal } from "./RecordPaymentModal";
 import { AddLibraryModal } from "./AddLibraryModal";
+import { PauseLibraryButton } from "./PauseLibraryButton";
 
 const dateFmt = new Intl.DateTimeFormat("en-IN", { day: "2-digit", month: "short", year: "numeric" });
 
-function statusOf(expiresAt: Date | null) {
+function statusOf(expiresAt: Date | null, suspended: boolean) {
+  if (suspended) return { label: "Paused", className: "bg-error/10 text-error" };
   if (!expiresAt) return { label: "No Subscription Set", className: "bg-gray-100 text-text-secondary" };
   const now = new Date();
   if (expiresAt < now) return { label: `Expired ${dateFmt.format(expiresAt)}`, className: "bg-error/10 text-error" };
@@ -46,7 +48,7 @@ export default async function PlatformLibrariesPage() {
             </thead>
             <tbody>
               {libraries.map((library) => {
-                const status = statusOf(library.subscriptionExpiresAt);
+                const status = statusOf(library.subscriptionExpiresAt, library.suspended);
                 return (
                   <tr key={library.id} className="border-b border-black/5 last:border-0">
                     <td className="px-6 py-4">
@@ -69,7 +71,14 @@ export default async function PlatformLibrariesPage() {
                     </td>
                     <td className="px-6 py-4 text-text-secondary">{dateFmt.format(library.createdAt)}</td>
                     <td className="px-6 py-4">
-                      <RecordPaymentModal libraryId={library.id} libraryName={library.businessName} />
+                      <div className="flex items-center gap-2">
+                        <RecordPaymentModal libraryId={library.id} libraryName={library.businessName} />
+                        <PauseLibraryButton
+                          libraryId={library.id}
+                          libraryName={library.businessName}
+                          suspended={library.suspended}
+                        />
+                      </div>
                     </td>
                   </tr>
                 );

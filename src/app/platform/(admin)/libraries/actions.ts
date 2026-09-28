@@ -9,6 +9,7 @@ import { DEFAULT_SHIFTS } from "@/lib/default-shifts";
 import {
   recordSubscriptionPaymentSchema,
   registerSchema,
+  platformResetPasswordSchema,
   fieldErrorsFrom,
   type ActionState,
 } from "@/lib/validation";
@@ -118,4 +119,44 @@ export async function recordSubscriptionPayment(
   revalidatePath(`/platform/libraries/${libraryId}`);
 
   return null;
+}
+
+// A platform admin resetting a user's forgotten password — since production
+// has no working email sending (RESEND_API_KEY isn't wired up), this is the
+// only recovery path today. New password is set by/shown to the admin here,
+// same "hand it over yourself" pattern as creating a library.
+export async function resetUserPasswordAsPlatformAdmin(
+  userId: string,
+  libraryId: string,
+  _prev: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  await requirePlatformSession();
+
+  const parsed = platformResetPasswordSchema.safeParse({ password: formData.get("password") });
+  if (!parsed.success) return { fieldErrors: fieldErrorsFrom(parsed.error) };
+
+  const user = await db.user.findFirst({ where: { id: userId, libraryId } });
+  if (!user) return { formError: "USER NOT FOUND" };
+
+  const passwordHash = await hashPassword(parsed.data.password);
+  await db.user.update({ where: { id: userId }, data: { passwordHash } });
+
+  revalidatePath(`/platform/libraries/${libraryId}`);
+  return null;
+}
+
+// Manual kill switch — independent of the subscription date, for "cut them off
+// right now" (e.g. a bounced/disputed payment) without touching subscriptionExpiresAt,
+// so resuming later doesn't require re-entering or guessing the old expiry.
+export async function setLibrarySuspended(libraryId: string, suspended: boolean) {
+  await requirePlatformSession();
+
+  await db.library.update({
+    where: { id: libraryId },
+    data: { suspended, suspendedAt: suspended ? new Date() : null },
+  });
+
+  revalidatePath("/platform/libraries");
+  revalidatePath(`/platform/libraries/${libraryId}`);
 }
