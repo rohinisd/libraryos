@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getLibrariesWithSubscriptionStatus } from "@/lib/queries/platform";
 import { RecordPaymentModal } from "./RecordPaymentModal";
+import { AddLibraryModal } from "./AddLibraryModal";
 
 const dateFmt = new Intl.DateTimeFormat("en-IN", { day: "2-digit", month: "short", year: "numeric" });
 
@@ -16,11 +17,14 @@ export default async function PlatformLibrariesPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-extrabold text-text-primary">Libraries</h1>
-        <p className="mt-1 text-sm text-text-secondary">
-          Manually track each library&apos;s LibraryOS subscription — no payment gateway.
-        </p>
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-extrabold text-text-primary">Libraries</h1>
+          <p className="mt-1 text-sm text-text-secondary">
+            Manually track each library&apos;s LibraryOS subscription — no payment gateway.
+          </p>
+        </div>
+        <AddLibraryModal />
       </div>
 
       {libraries.length === 0 ? (

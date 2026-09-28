@@ -58,6 +58,12 @@ export async function login(_prev: ActionState, formData: FormData): Promise<Act
   redirect(typeof next === "string" && next.startsWith("/") ? next : "/dashboard");
 }
 
+// Self-registered libraries get a free trial, then must pay to keep using the
+// app (checked in requireSession() via Library.subscriptionExpiresAt). Admin-
+// added libraries (platform/(admin)/libraries/actions.ts) get no forced trial —
+// the platform admin sets their subscription directly via Record Payment.
+const TRIAL_DAYS = 14;
+
 export async function registerLibrary(
   _prev: ActionState,
   formData: FormData,
@@ -81,7 +87,11 @@ export async function registerLibrary(
 
   const { user, library } = await db.$transaction(async (tx) => {
     const library = await tx.library.create({
-      data: { businessName, businessAddress: businessAddress || null },
+      data: {
+        businessName,
+        businessAddress: businessAddress || null,
+        subscriptionExpiresAt: new Date(Date.now() + TRIAL_DAYS * 24 * 60 * 60 * 1000),
+      },
     });
 
     await tx.shift.createMany({

@@ -26,6 +26,11 @@ export default function RegisterPage() {
 
         <RegisterForm />
 
+        <p className="mt-6 rounded-2xl bg-white/5 px-4 py-3 text-center text-xs text-gray-400">
+          Free for 14 days. After that it&apos;s ₹2,000/year — we&apos;ll reach out to activate it,
+          no card needed today.
+        </p>
+
         <p className="mt-6 text-center text-sm text-gray-400">
           Already have an account?{" "}
           <Link href="/login" className="font-bold text-primary-light underline">

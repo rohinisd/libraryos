@@ -1,13 +1,68 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { requirePlatformSession } from "@/lib/platform-session";
+import { hashPassword } from "@/lib/password";
+import { DEFAULT_SHIFTS } from "@/lib/default-shifts";
 import {
   recordSubscriptionPaymentSchema,
+  registerSchema,
   fieldErrorsFrom,
   type ActionState,
 } from "@/lib/validation";
+
+// Platform-admin-created libraries — unlike self-registration (registerLibrary
+// in app/(auth)/actions.ts), these get no automatic trial. subscriptionExpiresAt
+// stays null (unrestricted) until you record their first payment via the
+// "Record Payment" button on the library's own page, on whatever terms you agree.
+export async function createLibraryAsPlatformAdmin(
+  _prev: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  await requirePlatformSession();
+
+  const parsed = registerSchema.safeParse({
+    businessName: formData.get("businessName"),
+    businessAddress: formData.get("businessAddress"),
+    name: formData.get("name"),
+    email: formData.get("email"),
+    contactNumber: formData.get("contactNumber"),
+    password: formData.get("password"),
+  });
+  if (!parsed.success) return { fieldErrors: fieldErrorsFrom(parsed.error) };
+
+  const { businessName, businessAddress, name, email, contactNumber, password } = parsed.data;
+
+  const existing = await db.user.findUnique({ where: { email } });
+  if (existing) return { fieldErrors: { email: "AN ACCOUNT WITH THIS EMAIL ALREADY EXISTS" } };
+
+  const passwordHash = await hashPassword(password);
+
+  const library = await db.$transaction(async (tx) => {
+    const library = await tx.library.create({
+      data: { businessName, businessAddress: businessAddress || null },
+    });
+
+    await tx.shift.createMany({
+      data: DEFAULT_SHIFTS.map((shift) => ({
+        ...shift,
+        isSystemSlot: true,
+        libraryId: library.id,
+      })),
+    });
+
+    await tx.user.create({
+      data: { name, email, contactNumber, passwordHash, role: "ADMIN", libraryId: library.id },
+    });
+
+    return library;
+  });
+
+  revalidatePath("/platform/libraries");
+  redirect(`/platform/libraries/${library.id}`);
+}
 
 export async function recordSubscriptionPayment(
   libraryId: string,

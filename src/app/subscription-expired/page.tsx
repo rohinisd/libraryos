@@ -12,8 +12,8 @@ export default async function SubscriptionExpiredPage() {
       <div className="w-full max-w-[480px] rounded-3xl bg-login-card p-10 text-center">
         <h1 className="text-2xl font-bold text-white">Subscription Expired</h1>
         <p className="mt-3 text-sm text-gray-400">
-          {session ? `${session.email}, your` : "Your"} library&apos;s LibraryOS subscription has
-          expired. Contact us to renew and regain access.
+          {session ? `${session.email}, your` : "Your"} library&apos;s LibraryOS access has ended.
+          Contact us to activate your ₹2,000/year subscription and regain access.
         </p>
         {session && (
           <form action={logout} className="mt-6">
