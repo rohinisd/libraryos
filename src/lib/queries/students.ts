@@ -148,6 +148,11 @@ export function getRecentStudentCount(libraryId: string) {
 export function getStudentById(libraryId: string, studentId: string) {
   return db.student.findFirst({
     where: { id: studentId, libraryId },
-    include: { seat: true, shifts: { include: { shift: true } }, payments: true },
+    include: {
+      seat: true,
+      shifts: { include: { shift: true } },
+      payments: true,
+      library: { select: { businessName: true, businessAddress: true } },
+    },
   });
 }

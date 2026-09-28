@@ -2,17 +2,19 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Pencil, Power, Trash2, Armchair, X } from "lucide-react";
+import { Pencil, Power, Trash2, Armchair, X, IdCard as IdCardIcon } from "lucide-react";
 import { StudentContactActions } from "@/components/StudentContactActions";
-import type { Student, Seat, StudentShift, Shift, Payment } from "@/generated/prisma/client";
+import type { Student, Seat, StudentShift, Shift, Payment, Library } from "@/generated/prisma/client";
 import { assignSeat, deleteStudent, setStudentStatus, unassignSeat } from "../actions";
 import { StudentEditForm } from "./StudentEditForm";
 import { RecordPaymentModal } from "../../payments/RecordPaymentModal";
+import { IdCardModal } from "./IdCardModal";
 
 type FullStudent = Student & {
   seat: Seat | null;
   shifts: (StudentShift & { shift: Shift })[];
   payments: Payment[];
+  library: Pick<Library, "businessName" | "businessAddress">;
 };
 
 const STATUS_STYLE: Record<string, string> = {
@@ -57,6 +59,10 @@ export function StudentDetailView({
     (a, b) => new Date(b.paidAt).getTime() - new Date(a.paidAt).getTime(),
   );
 
+  const validUntil = student.payments.length
+    ? new Date(Math.max(...student.payments.map((p) => new Date(p.endDate).getTime())))
+    : null;
+
   return (
     <div className="space-y-6">
       <div className="card flex flex-col gap-5 p-6 sm:flex-row">
@@ -93,6 +99,24 @@ export function StudentDetailView({
             >
               <Pencil size={14} /> Edit Profile
             </button>
+            <IdCardModal
+              data={{
+                businessName: student.library.businessName,
+                businessAddress: student.library.businessAddress,
+                fullName: student.fullName,
+                fatherName: student.fatherName,
+                photoUrl: student.photoUrl,
+                serial: student.serial,
+                seatNumber: student.seat?.seatNumber ?? null,
+                entryDate: student.entryDate,
+                validUntil,
+              }}
+              trigger={
+                <span className="btn-pill inline-flex cursor-pointer items-center gap-1.5 border border-black/10 px-4 py-2 text-xs font-bold uppercase text-text-secondary">
+                  <IdCardIcon size={14} /> ID Card
+                </span>
+              }
+            />
             <RecordPaymentModal
               students={[{ id: student.id, fullName: student.fullName, phone: student.phone, monthlyFees: student.monthlyFees }]}
               trigger={

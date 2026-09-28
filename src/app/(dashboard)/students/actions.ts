@@ -68,27 +68,39 @@ export async function createStudent(_prev: ActionState, formData: FormData): Pro
     .filter((s) => s.status === "ACTIVE")
     .reduce((sum, s) => sum + s.monthlyFees, 0);
 
-  const student = await db.student.create({
-    data: {
-      fullName: data.fullName,
-      fatherName: data.fatherName || null,
-      phone: data.phone,
-      entryDate: data.entryDate ? new Date(data.entryDate) : new Date(),
-      aadhaarNumber: data.aadhaarNumber || null,
-      gender: data.gender,
-      address: data.address || null,
-      notes: data.notes || null,
-      photoUrl,
-      monthlyFees,
-      libraryId: session.libraryId,
-      seatId: data.seatId || null,
-      shifts: {
-        create: data.shifts.map((s) => ({
-          shiftId: s.shiftId,
-          status: s.status,
-        })),
+  // Atomically claim the next per-library ID number (shown on the ID card as
+  // "#1", "#2"...) — the increment happens as part of this same transaction,
+  // so two staff adding students at once can never be handed the same number.
+  const student = await db.$transaction(async (tx) => {
+    const library = await tx.library.update({
+      where: { id: session.libraryId },
+      data: { nextStudentSerial: { increment: 1 } },
+      select: { nextStudentSerial: true },
+    });
+
+    return tx.student.create({
+      data: {
+        serial: library.nextStudentSerial - 1,
+        fullName: data.fullName,
+        fatherName: data.fatherName || null,
+        phone: data.phone,
+        entryDate: data.entryDate ? new Date(data.entryDate) : new Date(),
+        aadhaarNumber: data.aadhaarNumber || null,
+        gender: data.gender,
+        address: data.address || null,
+        notes: data.notes || null,
+        photoUrl,
+        monthlyFees,
+        libraryId: session.libraryId,
+        seatId: data.seatId || null,
+        shifts: {
+          create: data.shifts.map((s) => ({
+            shiftId: s.shiftId,
+            status: s.status,
+          })),
+        },
       },
-    },
+    });
   });
 
   revalidatePath("/students");

@@ -11,7 +11,8 @@
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",
     "db:studio": "prisma studio",
-    "db:encrypt-existing": "tsx scripts/encrypt-existing-students.ts"
+    "db:encrypt-existing": "tsx scripts/encrypt-existing-students.ts",
+    "db:backfill-serials": "tsx scripts/backfill-student-serials.ts"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.10.0",
@@ -19,6 +20,7 @@
     "bcryptjs": "^3.0.3",
     "clsx": "^2.1.1",
     "dotenv": "^18.0.2",
+    "html-to-image": "^1.11.13",
     "jose": "^6.2.12",
     "lucide-react": "^1.47.0",
     "next": "16.3.5",

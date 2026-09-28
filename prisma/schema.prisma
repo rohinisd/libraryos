@@ -44,6 +44,11 @@ model Library {
   // see requireSession() in lib/session.ts for where this is checked.
   subscriptionExpiresAt DateTime?
 
+  // Next per-library student ID number (the "#1", "#2"... shown on ID cards).
+  // Incremented atomically in createStudent's transaction; never reused even
+  // if a student is deleted, so an old ID card can never point at someone else.
+  nextStudentSerial Int @default(1)
+
   users                User[]
   students             Student[]
   seats                Seat[]
@@ -111,6 +116,7 @@ model User {
 
 model Student {
   id             String        @id @default(cuid())
+  serial         Int?
   fullName       String
   fatherName     String?
   // `phone` and `aadhaarNumber` hold AES-256-GCM ciphertext (see lib/field-crypto.ts);
