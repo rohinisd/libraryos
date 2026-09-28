@@ -5,15 +5,62 @@ type Props = {
   // 10-digit Indian mobile number, as stored on the student.
   phone: string;
   monthlyFees: number;
+  // Latest payment's coverage end date, if any — drives the message wording
+  // (overdue / due soon / paid ahead). Omit if unknown.
+  dueDate?: Date | string | null;
+  libraryName?: string | null;
   // "icon" = compact round buttons for list rows; "button" = labelled pills.
   variant?: "icon" | "button";
 };
 
+const DAY_MS = 24 * 60 * 60 * 1000;
+const dateFmt = (d: Date) =>
+  d.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+
 // Owner-initiated contact: each action is a plain link that opens the phone's own
 // dialer / WhatsApp / messaging app, so it needs no gateway and costs nothing extra.
-export function StudentContactActions({ fullName, phone, monthlyFees, variant = "icon" }: Props) {
+// The owner still taps Send themselves — nothing here sends automatically.
+export function buildFeeReminderMessage({
+  fullName,
+  monthlyFees,
+  dueDate,
+  libraryName,
+}: {
+  fullName: string;
+  monthlyFees: number;
+  dueDate?: Date | string | null;
+  libraryName?: string | null;
+}): string {
   const firstName = fullName.trim().split(/\s+/)[0];
-  const message = `Hi ${firstName}, a gentle reminder that your library fee of ₹${monthlyFees} is due. Please pay at the earliest. Thank you.`;
+  const org = libraryName?.trim() || "library";
+
+  if (!dueDate) {
+    return `Hi ${firstName}, a gentle reminder that your ${org} fee of ₹${monthlyFees} is due. Please pay at the earliest to keep your seat. Thank you.`;
+  }
+
+  const due = new Date(dueDate);
+  const diff = due.getTime() - Date.now();
+  const days = Math.ceil(Math.abs(diff) / DAY_MS);
+  const dateLabel = dateFmt(due);
+
+  if (diff < 0) {
+    return `Hi ${firstName}, your ${org} fee of ₹${monthlyFees} was due on ${dateLabel} (${days} day${days === 1 ? "" : "s"} overdue). Please pay at the earliest to keep your seat. Thank you.`;
+  }
+  if (days <= 7) {
+    return `Hi ${firstName}, a gentle reminder that your ${org} fee of ₹${monthlyFees} is due on ${dateLabel} (${days} day${days === 1 ? "" : "s"} left). Please renew at the earliest to keep your seat. Thank you.`;
+  }
+  return `Hi ${firstName}, just confirming your ${org} membership is active and paid till ${dateLabel}. Thank you for being with us!`;
+}
+
+export function StudentContactActions({
+  fullName,
+  phone,
+  monthlyFees,
+  dueDate,
+  libraryName,
+  variant = "icon",
+}: Props) {
+  const message = buildFeeReminderMessage({ fullName, monthlyFees, dueDate, libraryName });
 
   const actions = [
     {

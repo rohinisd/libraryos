@@ -19,6 +19,7 @@ import {
 } from "@/lib/queries/students";
 import { getSectionsWithVacantSeats } from "@/lib/queries/seats";
 import { getActiveShifts } from "@/lib/queries/shifts";
+import { db } from "@/lib/db";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { StudentWizard } from "./StudentWizard";
 import { StudentRow } from "./StudentRow";
@@ -47,7 +48,7 @@ export default async function StudentsPage({ searchParams }: PageProps<"/student
   const search = typeof params.search === "string" ? params.search : "";
   const page = Number(params.page) > 0 ? Number(params.page) : 1;
 
-  const [{ students, totalCount, pageSize }, recentCount, { sections, vacantSeatsBySection }, activeShifts] =
+  const [{ students, totalCount, pageSize }, recentCount, { sections, vacantSeatsBySection }, activeShifts, library] =
     await Promise.all([
       getStudents(session.libraryId, {
         tab,
@@ -58,6 +59,7 @@ export default async function StudentsPage({ searchParams }: PageProps<"/student
       getRecentStudentCount(session.libraryId),
       getSectionsWithVacantSeats(session.libraryId),
       getActiveShifts(session.libraryId),
+      db.library.findUnique({ where: { id: session.libraryId }, select: { businessName: true } }),
     ]);
 
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
@@ -206,13 +208,13 @@ export default async function StudentsPage({ searchParams }: PageProps<"/student
       ) : view === "gallery" ? (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {students.map((student) => (
-            <StudentCard key={student.id} student={student} now={now} />
+            <StudentCard key={student.id} student={student} now={now} libraryName={library?.businessName} />
           ))}
         </div>
       ) : (
         <div className="card divide-y divide-black/5">
           {students.map((student) => (
-            <StudentRow key={student.id} student={student} />
+            <StudentRow key={student.id} student={student} libraryName={library?.businessName} />
           ))}
         </div>
       )}

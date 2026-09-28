@@ -92,6 +92,8 @@ export function StudentDetailView({
               fullName={student.fullName}
               phone={student.phone}
               monthlyFees={student.monthlyFees}
+              dueDate={validUntil}
+              libraryName={student.library.businessName}
             />
             <button
               onClick={() => setEditing(true)}

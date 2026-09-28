@@ -42,7 +42,15 @@ function feeStatus(endDate: Date | undefined, now: number): { label: string; sty
     : { label: `Expired ${daysAgo}d ago`, style: "bg-orange/10 text-orange" };
 }
 
-export function StudentCard({ student, now }: { student: CardStudent; now: number }) {
+export function StudentCard({
+  student,
+  now,
+  libraryName,
+}: {
+  student: CardStudent;
+  now: number;
+  libraryName?: string;
+}) {
   const fee = feeStatus(student.payments[0]?.endDate, now);
 
   return (
@@ -86,6 +94,8 @@ export function StudentCard({ student, now }: { student: CardStudent; now: numbe
           fullName={student.fullName}
           phone={student.phone}
           monthlyFees={student.monthlyFees}
+          dueDate={student.payments[0]?.endDate ?? null}
+          libraryName={libraryName}
         />
         <Link
           href={`/students/${student.id}`}

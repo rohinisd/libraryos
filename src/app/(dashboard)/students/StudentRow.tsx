@@ -15,6 +15,8 @@ type StudentRowData = {
   photoUrl: string | null;
   seat: { seatNumber: number } | null;
   shifts: { shift: { name: string } }[];
+  // Newest coverage window first (at most one row is loaded).
+  payments: { endDate: Date }[];
 };
 
 const STATUS_STYLE: Record<StudentRowData["status"], string> = {
@@ -23,7 +25,7 @@ const STATUS_STYLE: Record<StudentRowData["status"], string> = {
   TRIAL: "bg-purple/10 text-purple",
 };
 
-export function StudentRow({ student }: { student: StudentRowData }) {
+export function StudentRow({ student, libraryName }: { student: StudentRowData; libraryName?: string }) {
   const [isPending, startTransition] = useTransition();
 
   return (
@@ -61,6 +63,8 @@ export function StudentRow({ student }: { student: StudentRowData }) {
           fullName={student.fullName}
           phone={student.phone}
           monthlyFees={student.monthlyFees}
+          dueDate={student.payments[0]?.endDate ?? null}
+          libraryName={libraryName}
         />
         <Link href={`/students/${student.id}`} className="hover:text-primary" aria-label="View student">
           <Eye size={16} />
