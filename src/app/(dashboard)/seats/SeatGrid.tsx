@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import Link from "next/link";
 import { X } from "lucide-react";
 import clsx from "clsx";
 import { deleteSeat } from "./actions";
@@ -39,18 +40,35 @@ export function SeatGrid({ floors }: { floors: { floor: number; seats: SeatWithS
       )}
 
       <div className="grid grid-cols-4 gap-3 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10">
-        {current?.seats.map((seat) => (
-          <div
-            key={seat.id}
-            title={seat.student ? seat.student.fullName : "Vacant"}
-            className={clsx(
-              "group relative flex aspect-square flex-col items-center justify-center rounded-xl text-xs font-bold",
-              seat.student
-                ? "bg-orange/15 text-orange"
-                : "bg-green/10 text-green hover:bg-green/20",
-            )}
-          >
-            {!seat.student && (
+        {current?.seats.map((seat) => {
+          const tileClass = clsx(
+            "group relative flex aspect-square flex-col items-center justify-center rounded-xl text-xs font-bold",
+            seat.student
+              ? "bg-orange/15 text-orange hover:bg-orange/25"
+              : "bg-green/10 text-green hover:bg-green/20",
+          );
+          const inner = (
+            <>
+              <span>{seat.seatNumber}</span>
+              {seat.student && (
+                <span className="max-w-full truncate px-1 text-[9px] font-medium">
+                  {seat.student.fullName.split(" ")[0]}
+                </span>
+              )}
+            </>
+          );
+
+          return seat.student ? (
+            <Link
+              key={seat.id}
+              href={`/students/${seat.student.id}`}
+              title={`${seat.student.fullName} — view profile`}
+              className={tileClass}
+            >
+              {inner}
+            </Link>
+          ) : (
+            <div key={seat.id} title="Vacant" className={tileClass}>
               <button
                 type="button"
                 onClick={() => {
@@ -62,15 +80,10 @@ export function SeatGrid({ floors }: { floors: { floor: number; seats: SeatWithS
               >
                 <X size={10} />
               </button>
-            )}
-            <span>{seat.seatNumber}</span>
-            {seat.student && (
-              <span className="max-w-full truncate px-1 text-[9px] font-medium">
-                {seat.student.fullName.split(" ")[0]}
-              </span>
-            )}
-          </div>
-        ))}
+              {inner}
+            </div>
+          );
+        })}
       </div>
     </div>
   );
