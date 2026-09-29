@@ -25,7 +25,7 @@ export async function getSeatOverview(libraryId: string) {
   const seats = await db.seat.findMany({
     where: { libraryId },
     orderBy: [{ floor: "asc" }, { seatNumber: "asc" }],
-    include: { student: { select: { id: true, fullName: true, status: true } } },
+    include: { student: { select: { id: true, fullName: true, status: true, photoUrl: true } } },
   });
 
   const capacity = seats.length;
