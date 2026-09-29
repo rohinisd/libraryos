@@ -4,6 +4,7 @@ import { useActionState, useMemo, useState, useTransition } from "react";
 import { CloudUpload, Plus, Trash2 } from "lucide-react";
 import type { Student, Seat, StudentShift, Shift } from "@/generated/prisma/client";
 import { updateStudent } from "../actions";
+import { compressImageFile } from "@/lib/compress-image";
 import type { ActionState } from "@/lib/validation";
 
 type ShiftOption = { id: string; name: string; monthlyFees: number };
@@ -116,11 +117,18 @@ export function StudentEditForm({
                 type="file"
                 accept="image/*"
                 className="hidden"
-                onChange={(e) => {
+                onChange={async (e) => {
                   const file = e.target.files?.[0] ?? null;
-                  setPhotoFile(file);
+                  if (!file) {
+                    setPhotoFile(null);
+                    setRemovePhoto(false);
+                    setPhotoPreview(student.photoUrl);
+                    return;
+                  }
+                  const compressed = await compressImageFile(file);
+                  setPhotoFile(compressed);
                   setRemovePhoto(false);
-                  setPhotoPreview(file ? URL.createObjectURL(file) : student.photoUrl);
+                  setPhotoPreview(URL.createObjectURL(compressed));
                 }}
               />
             </label>

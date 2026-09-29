@@ -4,6 +4,7 @@ import { useActionState, useMemo, useState, useTransition } from "react";
 import { Check, CloudUpload, Plus, Trash2 } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
 import { createStudent } from "./actions";
+import { compressImageFile } from "@/lib/compress-image";
 import type { ActionState } from "@/lib/validation";
 
 type ShiftOption = { id: string; name: string; monthlyFees: number };
@@ -167,10 +168,16 @@ export function StudentWizard({ trigger, sections, vacantSeatsBySection, shiftOp
                       type="file"
                       accept="image/*"
                       className="hidden"
-                      onChange={(e) => {
+                      onChange={async (e) => {
                         const file = e.target.files?.[0] ?? null;
-                        setPhotoFile(file);
-                        setPhotoPreview(file ? URL.createObjectURL(file) : null);
+                        if (!file) {
+                          setPhotoFile(null);
+                          setPhotoPreview(null);
+                          return;
+                        }
+                        const compressed = await compressImageFile(file);
+                        setPhotoFile(compressed);
+                        setPhotoPreview(URL.createObjectURL(compressed));
                       }}
                     />
                   </label>
