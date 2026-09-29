@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useRef, useState } from "react";
-import { Download, MessageCircle } from "lucide-react";
+import { Download, MessageCircle, ImagePlus, X } from "lucide-react";
 import { toBlob } from "html-to-image";
 import { Modal } from "@/components/ui/Modal";
 import { IdCard, type IdCardData } from "./IdCard";
@@ -19,8 +19,15 @@ function canShareFiles() {
   }
 }
 
-async function renderCardBlob(node: HTMLElement): Promise<Blob> {
-  const blob = await toBlob(node, { pixelRatio: 2, cacheBust: true, backgroundColor: "#ffffff" });
+async function renderCardBlob(node: HTMLElement, hasLocalPhoto: boolean): Promise<Blob> {
+  // cacheBust appends a query string to image URLs to dodge the browser cache —
+  // harmless for a real hosted photo, but it corrupts a local blob: URL (picked
+  // from the phone for this card), which doesn't support query params at all.
+  const blob = await toBlob(node, {
+    pixelRatio: 2,
+    cacheBust: !hasLocalPhoto,
+    backgroundColor: "#ffffff",
+  });
   if (!blob) throw new Error("Could not generate the ID card image.");
   return blob;
 }
@@ -30,7 +37,32 @@ export function IdCardModal({ data, trigger }: { data: IdCardData; trigger: Reac
   const [busy, setBusy] = useState<"share" | "download" | null>(null);
   const [error, setError] = useState<string | null>(null);
   const cardRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const shareSupported = useMemo(() => canShareFiles(), []);
+
+  // Photo picked from the phone for this card only — never uploaded anywhere,
+  // lives purely in this tab's memory. Cleared whenever the modal closes, so
+  // each new "ID Card" click starts fresh rather than remembering last time's pick.
+  const [localPhotoUrl, setLocalPhotoUrl] = useState<string | null>(null);
+  const cardData: IdCardData = { ...data, photoUrl: localPhotoUrl ?? data.photoUrl };
+
+  function clearLocalPhoto() {
+    if (localPhotoUrl) URL.revokeObjectURL(localPhotoUrl);
+    setLocalPhotoUrl(null);
+  }
+
+  function handleClose() {
+    clearLocalPhoto();
+    setOpen(false);
+  }
+
+  function handlePhotoPicked(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = ""; // allow picking the same file again later
+    if (!file) return;
+    if (localPhotoUrl) URL.revokeObjectURL(localPhotoUrl);
+    setLocalPhotoUrl(URL.createObjectURL(file));
+  }
 
   const fileName = `${data.fullName.trim().replace(/\s+/g, "-").toLowerCase()}-id-card.png`;
 
@@ -39,7 +71,7 @@ export function IdCardModal({ data, trigger }: { data: IdCardData; trigger: Reac
     setError(null);
     setBusy("download");
     try {
-      const blob = await renderCardBlob(cardRef.current);
+      const blob = await renderCardBlob(cardRef.current, !!localPhotoUrl);
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
@@ -58,7 +90,7 @@ export function IdCardModal({ data, trigger }: { data: IdCardData; trigger: Reac
     setError(null);
     setBusy("share");
     try {
-      const blob = await renderCardBlob(cardRef.current);
+      const blob = await renderCardBlob(cardRef.current, !!localPhotoUrl);
       const file = new File([blob], fileName, { type: "image/png" });
       await navigator.share({ files: [file], title: `${data.fullName}'s Library ID` });
     } catch (err) {
@@ -73,10 +105,42 @@ export function IdCardModal({ data, trigger }: { data: IdCardData; trigger: Reac
   return (
     <>
       <span onClick={() => setOpen(true)}>{trigger}</span>
-      <Modal open={open} onClose={() => setOpen(false)} title="Student ID Card">
+      <Modal open={open} onClose={handleClose} title="Student ID Card">
         <div className="flex justify-center overflow-x-auto rounded-2xl bg-app-bg p-4">
-          <IdCard ref={cardRef} data={data} />
+          <IdCard ref={cardRef} data={cardData} />
         </div>
+
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          onChange={handlePhotoPicked}
+          className="hidden"
+        />
+        <div className="mt-3 flex justify-center gap-2">
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            className="btn-pill flex items-center gap-1.5 border border-black/10 px-4 py-2 text-xs font-bold text-text-secondary"
+          >
+            <ImagePlus size={14} />
+            {localPhotoUrl ? "Change Photo" : "Add Photo From Phone"}
+          </button>
+          {localPhotoUrl && (
+            <button
+              type="button"
+              onClick={clearLocalPhoto}
+              className="btn-pill flex items-center gap-1.5 border border-black/10 px-3 py-2 text-xs font-bold text-text-secondary"
+              aria-label="Remove photo"
+            >
+              <X size={14} />
+            </button>
+          )}
+        </div>
+        <p className="mt-1.5 text-center text-[11px] text-text-secondary">
+          The photo is only used for this card — it&apos;s not saved anywhere. Pick it again next
+          time you make a card.
+        </p>
 
         {error && (
           <p className="mt-3 text-center text-[11px] font-semibold uppercase text-error">{error}</p>
