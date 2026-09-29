@@ -54,10 +54,7 @@ export const IdCard = forwardRef<HTMLDivElement, { data: IdCardData }>(function 
             <img
               src={data.photoUrl}
               alt={data.fullName}
-              // crossOrigin is only needed (and only works) for a remotely-hosted
-              // photo — a local blob: URL (picked from the phone for this card)
-              // isn't a CORS request at all, and setting it breaks the fetch.
-              crossOrigin={data.photoUrl.startsWith("blob:") ? undefined : "anonymous"}
+              crossOrigin="anonymous"
               className="h-full w-full object-cover"
             />
           ) : (
