@@ -56,12 +56,20 @@ export async function createStudent(_prev: ActionState, formData: FormData): Pro
   let photoUrl: string | undefined;
   const photo = formData.get("photo");
   if (photo instanceof File && photo.size > 0) {
-    const buffer = Buffer.from(await photo.arrayBuffer());
-    const result = await storage.upload(buffer, {
-      folder: `students/${session.libraryId}`,
-      filename: photo.name,
-    });
-    photoUrl = result.url;
+    try {
+      const buffer = Buffer.from(await photo.arrayBuffer());
+      const result = await storage.upload(buffer, {
+        folder: `students/${session.libraryId}`,
+        filename: photo.name,
+      });
+      photoUrl = result.url;
+    } catch (err) {
+      // Never let a storage failure crash the whole save — the rest of the
+      // student's details are still worth keeping. Logged server-side (visible
+      // in Vercel's function logs) so the real cause is diagnosable there.
+      console.error("Photo upload failed:", err);
+      return { formError: `PHOTO UPLOAD FAILED: ${err instanceof Error ? err.message : "UNKNOWN ERROR"}. TRY AGAIN WITHOUT A PHOTO, OR RETRY.` };
+    }
   }
 
   const monthlyFees = data.shifts
@@ -168,12 +176,17 @@ export async function updateStudent(
   let photoUrl = existing.photoUrl;
   const photo = formData.get("photo");
   if (photo instanceof File && photo.size > 0) {
-    const buffer = Buffer.from(await photo.arrayBuffer());
-    const result = await storage.upload(buffer, {
-      folder: `students/${session.libraryId}`,
-      filename: photo.name,
-    });
-    photoUrl = result.url;
+    try {
+      const buffer = Buffer.from(await photo.arrayBuffer());
+      const result = await storage.upload(buffer, {
+        folder: `students/${session.libraryId}`,
+        filename: photo.name,
+      });
+      photoUrl = result.url;
+    } catch (err) {
+      console.error("Photo upload failed:", err);
+      return { formError: `PHOTO UPLOAD FAILED: ${err instanceof Error ? err.message : "UNKNOWN ERROR"}. TRY AGAIN WITHOUT A PHOTO, OR RETRY.` };
+    }
   } else if (formData.get("removePhoto") === "1") {
     photoUrl = null;
   }
