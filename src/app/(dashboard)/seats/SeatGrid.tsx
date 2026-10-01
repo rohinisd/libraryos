@@ -2,14 +2,34 @@
 
 import { useState, useTransition } from "react";
 import Link from "next/link";
-import { X, Armchair } from "lucide-react";
+import { X, Armchair, CheckCircle2, Clock, AlertCircle } from "lucide-react";
 import clsx from "clsx";
 import { deleteSeat } from "./actions";
+import { getFeeStatus, type FeeStatusKind } from "@/lib/fee-status";
 
 type SeatWithStudent = {
   id: string;
   seatNumber: number;
-  student: { id: string; fullName: string; photoUrl: string | null } | null;
+  student: {
+    id: string;
+    fullName: string;
+    photoUrl: string | null;
+    payments: { endDate: Date }[];
+  } | null;
+};
+
+const FEE_BADGE_STYLE: Record<FeeStatusKind, string> = {
+  none: "",
+  paid: "bg-badge-green-text text-white",
+  "due-soon": "bg-orange text-white",
+  overdue: "bg-error text-white",
+};
+
+const FEE_BADGE_ICON: Record<FeeStatusKind, typeof CheckCircle2 | null> = {
+  none: null,
+  paid: CheckCircle2,
+  "due-soon": Clock,
+  overdue: AlertCircle,
 };
 
 export function SeatGrid({ floors }: { floors: { floor: number; seats: SeatWithStudent[] }[] }) {
@@ -52,8 +72,23 @@ export function SeatGrid({ floors }: { floors: { floor: number; seats: SeatWithS
                 .toUpperCase()
             : "";
 
+          const fee = student ? getFeeStatus(student.payments[0]?.endDate) : null;
+          const FeeIcon = fee ? FEE_BADGE_ICON[fee.kind] : null;
+
           const photo = (
             <div className="relative aspect-square w-full overflow-hidden rounded-t-2xl bg-app-bg">
+              {fee && fee.kind !== "none" && FeeIcon && (
+                <span
+                  title={fee.label}
+                  className={clsx(
+                    "absolute right-1.5 top-1.5 z-10 flex items-center gap-1 rounded-full px-2 py-1 text-[10px] font-bold shadow",
+                    FEE_BADGE_STYLE[fee.kind],
+                  )}
+                >
+                  <FeeIcon size={11} />
+                  {fee.badge}
+                </span>
+              )}
               {student ? (
                 student.photoUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element

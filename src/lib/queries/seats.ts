@@ -25,7 +25,19 @@ export async function getSeatOverview(libraryId: string) {
   const seats = await db.seat.findMany({
     where: { libraryId },
     orderBy: [{ floor: "asc" }, { seatNumber: "asc" }],
-    include: { student: { select: { id: true, fullName: true, status: true, photoUrl: true } } },
+    include: {
+      student: {
+        select: {
+          id: true,
+          fullName: true,
+          status: true,
+          photoUrl: true,
+          // Newest coverage window first (at most one row is loaded) — drives
+          // the paid/due-soon/overdue badge on each seat card.
+          payments: { orderBy: { endDate: "desc" }, take: 1, select: { endDate: true } },
+        },
+      },
+    },
   });
 
   const capacity = seats.length;

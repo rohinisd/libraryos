@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Armchair, Clock } from "lucide-react";
 import { StudentContactActions } from "@/components/StudentContactActions";
+import { getFeeStatus, type FeeStatusKind } from "@/lib/fee-status";
 
 type CardStudent = {
   id: string;
@@ -21,26 +22,12 @@ const STATUS_STYLE: Record<CardStudent["status"], string> = {
   TRIAL: "bg-purple/10 text-purple",
 };
 
-const DAY_MS = 24 * 60 * 60 * 1000;
-const dateFmt = (d: Date) =>
-  d.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
-
-// Same thresholds the Students tabs use: paid = covered today, remaining = ends
-// within 7 days, defaulter = lapsed more than 7 days ago.
-function feeStatus(endDate: Date | undefined, now: number): { label: string; style: string } {
-  if (!endDate) return { label: "No payment yet", style: "bg-gray-100 text-gray-500" };
-  const diff = endDate.getTime() - now;
-  if (diff >= 0) {
-    const daysLeft = Math.ceil(diff / DAY_MS);
-    return diff <= 7 * DAY_MS
-      ? { label: `Due in ${daysLeft}d · ${dateFmt(endDate)}`, style: "bg-orange/10 text-orange" }
-      : { label: `Paid till ${dateFmt(endDate)}`, style: "bg-badge-green-bg text-badge-green-text" };
-  }
-  const daysAgo = Math.ceil(-diff / DAY_MS);
-  return -diff > 7 * DAY_MS
-    ? { label: `Defaulter · ${daysAgo}d overdue`, style: "bg-error/10 text-error" }
-    : { label: `Expired ${daysAgo}d ago`, style: "bg-orange/10 text-orange" };
-}
+const FEE_KIND_STYLE: Record<FeeStatusKind, string> = {
+  none: "bg-gray-100 text-gray-500",
+  paid: "bg-badge-green-bg text-badge-green-text",
+  "due-soon": "bg-orange/10 text-orange",
+  overdue: "bg-error/10 text-error",
+};
 
 export function StudentCard({
   student,
@@ -51,7 +38,7 @@ export function StudentCard({
   now: number;
   libraryName?: string;
 }) {
-  const fee = feeStatus(student.payments[0]?.endDate, now);
+  const fee = getFeeStatus(student.payments[0]?.endDate, now);
 
   return (
     <div className="card flex flex-col gap-4 p-5">
@@ -74,7 +61,9 @@ export function StudentCard({
         <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-bold uppercase ${STATUS_STYLE[student.status]}`}>
           {student.status}
         </span>
-        <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-bold ${fee.style}`}>{fee.label}</span>
+        <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-bold ${FEE_KIND_STYLE[fee.kind]}`}>
+          {fee.label}
+        </span>
       </div>
 
       <dl className="space-y-1.5 text-sm text-text-secondary">
