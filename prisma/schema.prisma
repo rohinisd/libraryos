@@ -56,6 +56,19 @@ model Library {
   // if a student is deleted, so an old ID card can never point at someone else.
   nextStudentSerial Int @default(1)
 
+  // Opaque, unguessable id for this library's public seat-availability page
+  // (src/app/l/[token]) — never the internal cuid, so the public URL can be
+  // shared/QR-printed without exposing or enumerating library records. Nullable
+  // because libraries created before this feature existed don't have one yet;
+  // lib/queries/public.ts generates and saves one lazily on first use.
+  publicToken String? @unique
+
+  // Phone number shown on the public page's "Chat on WhatsApp" button. Deliberately
+  // separate from any User.contactNumber (which is encrypted + tied to one staff
+  // login) — the owner picks what number prospective students should contact,
+  // and leaving it unset simply hides the button.
+  publicContactNumber String?
+
   users                User[]
   students             Student[]
   seats                Seat[]

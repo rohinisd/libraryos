@@ -6,6 +6,7 @@ import { hashPassword, verifyPassword } from "@/lib/password";
 import { setSessionCookie, clearSessionCookie } from "@/lib/session";
 import { signSession } from "@/lib/jwt";
 import { DEFAULT_SHIFTS } from "@/lib/default-shifts";
+import { createPublicToken } from "@/lib/public-token";
 import { createResetToken, hashResetToken } from "@/lib/reset-token";
 import { emailSender } from "@/lib/email";
 import { phoneBlindIndex } from "@/lib/field-crypto";
@@ -91,6 +92,7 @@ export async function registerLibrary(
         businessName,
         businessAddress: businessAddress || null,
         subscriptionExpiresAt: new Date(Date.now() + TRIAL_DAYS * 24 * 60 * 60 * 1000),
+        publicToken: createPublicToken(),
       },
     });
 

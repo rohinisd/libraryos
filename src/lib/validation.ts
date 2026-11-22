@@ -180,6 +180,14 @@ export const recordSubscriptionPaymentSchema = z.object({
   note: z.string().optional(),
 });
 
+export const publicContactNumberSchema = z.object({
+  publicContactNumber: z
+    .string()
+    .regex(/^\d{10}$/, "NUMBER MUST BE 10 DIGITS")
+    .optional()
+    .or(z.literal("")),
+});
+
 export const platformResetPasswordSchema = z.object({
   password: z.string().min(6, "PASSWORD MUST BE AT LEAST 6 CHARACTERS"),
 });

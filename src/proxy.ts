@@ -1,8 +1,14 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { SESSION_COOKIE, verifySessionToken } from "@/lib/jwt";
 import { PLATFORM_SESSION_COOKIE, verifyPlatformSessionToken } from "@/lib/platform-jwt";
+import { isRateLimited } from "@/lib/rate-limit";
 
+// Redirected away from if already logged in (e.g. visiting /login while signed in).
 const PUBLIC_PATHS = ["/login", "/register", "/forgot-password", "/reset-password"];
+// Never gated and never redirected either way — the public seat-availability page
+// must stay reachable whether the visitor (or the owner checking their own QR) is
+// logged in or not.
+const ALWAYS_PUBLIC_PATHS = ["/l"];
 
 // Next.js 16 renamed middleware.ts -> proxy.ts (Node-only runtime, no edge).
 // This only gatekeeps navigations; every Server Action / Route Handler must
@@ -26,6 +32,16 @@ export async function proxy(request: NextRequest) {
     }
     if (adminSession && isPlatformPublicPath) {
       return NextResponse.redirect(new URL("/platform/libraries", request.url));
+    }
+    return NextResponse.next();
+  }
+
+  if (ALWAYS_PUBLIC_PATHS.some((path) => pathname.startsWith(path))) {
+    // No login gate here, so this is the one route unauthenticated traffic can
+    // hammer — a generous per-IP cap (not a hardened/global one; see rate-limit.ts).
+    const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
+    if (isRateLimited(`public-page:${ip}`, 30, 60_000)) {
+      return new NextResponse("Too many requests — please try again in a moment.", { status: 429 });
     }
     return NextResponse.next();
   }

@@ -8,6 +8,7 @@ import { hashPassword, verifyPassword } from "@/lib/password";
 import {
   editProfileSchema,
   changePasswordSchema,
+  publicContactNumberSchema,
   fieldErrorsFrom,
   type ActionState,
 } from "@/lib/validation";
@@ -44,6 +45,26 @@ export async function updateProfile(_prev: ActionState, formData: FormData): Pro
 
   revalidatePath("/profile");
   redirect("/profile");
+}
+
+export async function updatePublicContactNumber(
+  _prev: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  const session = await requireSession();
+
+  const parsed = publicContactNumberSchema.safeParse({
+    publicContactNumber: formData.get("publicContactNumber") || undefined,
+  });
+  if (!parsed.success) return { fieldErrors: fieldErrorsFrom(parsed.error) };
+
+  await db.library.updateMany({
+    where: { id: session.libraryId },
+    data: { publicContactNumber: parsed.data.publicContactNumber || null },
+  });
+
+  revalidatePath("/profile");
+  return null;
 }
 
 export async function changePassword(

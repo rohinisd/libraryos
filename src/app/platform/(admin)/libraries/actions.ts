@@ -6,6 +6,7 @@ import { db } from "@/lib/db";
 import { requirePlatformSession } from "@/lib/platform-session";
 import { hashPassword } from "@/lib/password";
 import { DEFAULT_SHIFTS } from "@/lib/default-shifts";
+import { createPublicToken } from "@/lib/public-token";
 import {
   recordSubscriptionPaymentSchema,
   registerSchema,
@@ -43,7 +44,7 @@ export async function createLibraryAsPlatformAdmin(
 
   const library = await db.$transaction(async (tx) => {
     const library = await tx.library.create({
-      data: { businessName, businessAddress: businessAddress || null },
+      data: { businessName, businessAddress: businessAddress || null, publicToken: createPublicToken() },
     });
 
     await tx.shift.createMany({

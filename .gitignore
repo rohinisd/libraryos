@@ -37,6 +37,9 @@ yarn-error.log*
 # student photo uploads (personal data) from the local-disk storage adapter
 /public/uploads
 
+# local database backups (full pg_dump of production — password hashes + PII)
+/backups
+
 # vercel
 .vercel
 
