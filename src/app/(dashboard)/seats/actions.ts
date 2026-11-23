@@ -47,3 +47,29 @@ export async function deleteSeat(seatId: string) {
   });
   revalidatePath("/seats");
 }
+
+// Bulk version for multi-select on the Seats grid. Occupied seats among the
+// given ids are silently skipped (same guard as deleteSeat) rather than
+// failing the whole batch, since the selection was made client-side and a
+// seat could fill up between selecting and confirming.
+export async function deleteSeats(seatIds: string[]) {
+  const session = await requireSession();
+  const { count } = await db.seat.deleteMany({
+    where: { id: { in: seatIds }, libraryId: session.libraryId, student: null },
+  });
+  revalidatePath("/seats");
+  return { deletedCount: count };
+}
+
+// Removes every *vacant* seat on a floor in one go. Occupied seats on that
+// floor are left untouched (never force-vacated), so the floor can still
+// exist afterwards if it had occupied seats — the caller surfaces that via
+// the returned counts.
+export async function deleteFloor(floor: number) {
+  const session = await requireSession();
+  const { count } = await db.seat.deleteMany({
+    where: { libraryId: session.libraryId, floor, student: null },
+  });
+  revalidatePath("/seats");
+  return { deletedCount: count };
+}
