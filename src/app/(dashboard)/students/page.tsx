@@ -32,7 +32,7 @@ const TABS: { value: StudentTab; label: string }[] = [
   { value: "paid", label: "Paid" },
   { value: "dues", label: "Dues" },
   { value: "trial", label: "Trial" },
-  { value: "remaining", label: "Remaining" },
+  { value: "remaining", label: "Due Soon" },
   { value: "defaulter", label: "Defaulter" },
   { value: "active", label: "Active" },
   { value: "inactive", label: "Inactive" },
