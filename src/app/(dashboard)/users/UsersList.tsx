@@ -7,6 +7,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { Users as UsersIcon } from "lucide-react";
 import { deleteUser } from "./actions";
 import { EditUserModal } from "./EditUserModal";
+import { ResetPasswordModal } from "./ResetPasswordModal";
 import type { Role } from "@/generated/prisma/client";
 
 type UserRow = {
@@ -15,6 +16,7 @@ type UserRow = {
   email: string;
   contactNumber: string | null;
   role: Role;
+  isOwner: boolean;
 };
 
 const ROLE_BADGE: Record<Role, string> = {
@@ -85,10 +87,10 @@ export function UsersList({
                 <span
                   className={clsx(
                     "rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wide",
-                    ROLE_BADGE[user.role],
+                    user.isOwner ? "bg-orange/10 text-orange" : ROLE_BADGE[user.role],
                   )}
                 >
-                  {user.role}
+                  {user.isOwner ? "Owner" : user.role}
                 </span>
                 {isAdmin && (
                   <EditUserModal
@@ -105,6 +107,9 @@ export function UsersList({
                   />
                 )}
                 {isAdmin && user.id !== currentUserId && (
+                  <ResetPasswordModal userId={user.id} userName={user.name} userEmail={user.email} />
+                )}
+                {isAdmin && user.id !== currentUserId && !user.isOwner && (
                   <button
                     type="button"
                     disabled={isPending}

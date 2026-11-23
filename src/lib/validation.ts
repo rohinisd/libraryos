@@ -110,7 +110,6 @@ export const addUserSchema = z.object({
     .min(1, "PHONE NUMBER IS REQUIRED")
     .regex(/^\d{10}$/, "NUMBER MUST BE 10 DIGITS"),
   password: z.string().min(6, "PASSWORD MUST BE AT LEAST 6 CHARACTERS"),
-  role: z.enum(["ADMIN", "MANAGER", "STAFF"]).default("STAFF"),
 });
 
 export const paymentSchema = z
@@ -160,7 +159,6 @@ export const updateUserSchema = z.object({
     .string()
     .min(1, "PHONE NUMBER IS REQUIRED")
     .regex(/^\d{10}$/, "NUMBER MUST BE 10 DIGITS"),
-  role: z.enum(["ADMIN", "MANAGER", "STAFF"]).default("STAFF"),
 });
 
 export const platformLoginSchema = z.object({
@@ -190,6 +188,12 @@ export const publicContactNumberSchema = z.object({
 });
 
 export const platformResetPasswordSchema = z.object({
+  password: z.string().min(6, "PASSWORD MUST BE AT LEAST 6 CHARACTERS"),
+});
+
+// An owner/admin resetting a locked-out teammate's password from the Users
+// page — not the email-link forgot-password flow (resetPasswordSchema above).
+export const adminResetUserPasswordSchema = z.object({
   password: z.string().min(6, "PASSWORD MUST BE AT LEAST 6 CHARACTERS"),
 });
 

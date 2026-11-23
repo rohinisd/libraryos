@@ -21,13 +21,13 @@ import { logout } from "@/app/(auth)/actions";
 import clsx from "clsx";
 import { Logo } from "@/components/Logo";
 
-const NAV_GROUP_1 = [
+const NAV_GROUP_1_BASE = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutGrid },
   { href: "/students", label: "Students", icon: Users },
   { href: "/seats", label: "Seats", icon: Armchair },
   { href: "/payments", label: "Payments", icon: CreditCard },
-  { href: "/payment-dashboard", label: "Analytics", icon: BarChart3 },
 ];
+const ANALYTICS_NAV_ITEM = { href: "/payment-dashboard", label: "Analytics", icon: BarChart3 };
 
 const NAV_GROUP_2 = [
   { href: "/shifts", label: "Shifts", icon: Clock },
@@ -35,10 +35,11 @@ const NAV_GROUP_2 = [
   { href: "/users", label: "Users", icon: Settings2 },
 ];
 
-export function Sidebar() {
+export function Sidebar({ isOwner }: { isOwner: boolean }) {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const navGroup1 = isOwner ? [...NAV_GROUP_1_BASE, ANALYTICS_NAV_ITEM] : NAV_GROUP_1_BASE;
 
   return (
     <>
@@ -108,7 +109,7 @@ export function Sidebar() {
 
         <nav className="flex-1 space-y-1 overflow-y-auto px-3">
           <NavGroup
-            items={NAV_GROUP_1}
+            items={navGroup1}
             pathname={pathname}
             collapsed={collapsed}
             onNavigate={() => setMobileOpen(false)}

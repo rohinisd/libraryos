@@ -80,15 +80,6 @@ export function EditUserModal({
             )}
           </div>
 
-          <div>
-            <label className="field-label">Role</label>
-            <select name="role" defaultValue={user.role} className={`mt-1.5 ${inputClass}`}>
-              <option value="ADMIN">Admin</option>
-              <option value="MANAGER">Manager</option>
-              <option value="STAFF">Staff</option>
-            </select>
-          </div>
-
           {state?.formError && (
             <p className="rounded-lg bg-error/10 px-3 py-2 text-center text-[12px] font-semibold uppercase text-error">
               {state.formError}

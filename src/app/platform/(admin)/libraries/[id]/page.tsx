@@ -74,7 +74,8 @@ export default async function PlatformLibraryDetailPage({
             <div key={user.id} className="flex items-center justify-between px-6 py-3 text-sm">
               <div>
                 <p className="font-semibold text-text-primary">
-                  {user.name} <span className="text-text-muted">· {user.role}</span>
+                  {user.name}{" "}
+                  <span className="text-text-muted">· {user.isOwner ? "Owner" : user.role}</span>
                 </p>
                 <p className="text-text-secondary">{user.email}</p>
               </div>

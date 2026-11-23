@@ -56,7 +56,7 @@ export async function createLibraryAsPlatformAdmin(
     });
 
     await tx.user.create({
-      data: { name, email, contactNumber, passwordHash, role: "ADMIN", libraryId: library.id },
+      data: { name, email, contactNumber, passwordHash, role: "ADMIN", isOwner: true, libraryId: library.id },
     });
 
     return library;

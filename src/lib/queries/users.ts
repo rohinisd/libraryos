@@ -12,6 +12,7 @@ export function getUsers(libraryId: string) {
       email: true,
       contactNumber: true,
       role: true,
+      isOwner: true,
     },
   });
 }

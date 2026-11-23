@@ -50,6 +50,7 @@ export async function login(_prev: ActionState, formData: FormData): Promise<Act
     userId: user.id,
     libraryId: user.libraryId,
     role: user.role,
+    isOwner: user.isOwner,
     name: user.name,
     email: user.email,
   });
@@ -111,6 +112,7 @@ export async function registerLibrary(
         contactNumber,
         passwordHash,
         role: "ADMIN",
+        isOwner: true,
         libraryId: library.id,
       },
     });
@@ -122,6 +124,7 @@ export async function registerLibrary(
     userId: user.id,
     libraryId: library.id,
     role: user.role,
+    isOwner: user.isOwner,
     name: user.name,
     email: user.email,
   });

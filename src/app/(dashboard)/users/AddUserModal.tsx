@@ -16,7 +16,7 @@ export function AddUserModal({ trigger }: { trigger: React.ReactNode }) {
   return (
     <>
       <span onClick={() => setOpen(true)}>{trigger}</span>
-      <Modal open={open} onClose={() => setOpen(false)} title="Add New User" subtitle="Grant staff access to this library">
+      <Modal open={open} onClose={() => setOpen(false)} title="Add New Admin" subtitle="Grant another admin full access to this library">
         <form action={formAction} className="space-y-4">
           <div>
             <label className="field-label">Name</label>
@@ -50,15 +50,6 @@ export function AddUserModal({ trigger }: { trigger: React.ReactNode }) {
             {state?.fieldErrors?.password && (
               <p className="mt-1 text-[11px] font-semibold uppercase text-error">{state.fieldErrors.password}</p>
             )}
-          </div>
-
-          <div>
-            <label className="field-label">Role</label>
-            <select name="role" defaultValue="STAFF" className={`mt-1.5 ${inputClass}`}>
-              <option value="ADMIN">Admin</option>
-              <option value="MANAGER">Manager</option>
-              <option value="STAFF">Staff</option>
-            </select>
           </div>
 
           {state?.formError && (

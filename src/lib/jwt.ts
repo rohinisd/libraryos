@@ -8,6 +8,11 @@ export type SessionPayload = {
   userId: string;
   libraryId: string;
   role: Role;
+  // The library's single owner account (set at registration / platform "Add
+  // Library"), as opposed to an admin the owner added afterwards. Only an
+  // owner can see Analytics — see components/Sidebar.tsx and
+  // app/(dashboard)/payment-dashboard/page.tsx.
+  isOwner: boolean;
   name: string;
   email: string;
 };
@@ -35,6 +40,7 @@ export async function verifySessionToken(
       typeof payload.userId !== "string" ||
       typeof payload.libraryId !== "string" ||
       typeof payload.role !== "string" ||
+      typeof payload.isOwner !== "boolean" ||
       typeof payload.name !== "string" ||
       typeof payload.email !== "string"
     ) {

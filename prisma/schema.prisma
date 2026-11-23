@@ -119,6 +119,12 @@ model User {
   contactNumber     String?
   contactNumberHash String?
   role          Role     @default(ADMIN)
+  // True only for the one user created when the library itself was created
+  // (self-registration or platform-admin "Add Library") — the sole account
+  // that can see Analytics. Every other user an owner adds is role ADMIN with
+  // isOwner false: full access except Analytics. See requireSession() callers
+  // and components/Sidebar.tsx for where this is enforced.
+  isOwner       Boolean  @default(false)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 

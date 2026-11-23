@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { Zap, Calendar, TrendingDown, CheckCircle2, TrendingUp, CreditCard, Plus } from "lucide-react";
 import { requireSession } from "@/lib/session";
 import { getAnalyticsStats, getRevenueBreakdownByShift } from "@/lib/queries/analytics";
@@ -26,6 +27,9 @@ export default async function PaymentDashboardPage({
 }: PageProps<"/payment-dashboard">) {
   const params = await searchParams;
   const session = await requireSession();
+  // Analytics is owner-only — an admin the owner added can use every other
+  // page but not see library-wide revenue/business numbers here.
+  if (!session.isOwner) redirect("/dashboard");
 
   const now = new Date();
   const yearNum = Number(params.year);
