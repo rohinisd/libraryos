@@ -5,17 +5,42 @@ import { AddLibraryModal } from "./AddLibraryModal";
 import { PauseLibraryButton } from "./PauseLibraryButton";
 
 const dateFmt = new Intl.DateTimeFormat("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+const DAY_MS = 24 * 60 * 60 * 1000;
+const ENDING_SOON_DAYS = 7;
 
+// Rank 0/1 (expired / ending soon) are the ones to actually follow up with —
+// sorted to the top so they can't get buried once there are many libraries.
 function statusOf(expiresAt: Date | null, suspended: boolean) {
-  if (suspended) return { label: "Paused", className: "bg-error/10 text-error" };
-  if (!expiresAt) return { label: "No Subscription Set", className: "bg-gray-100 text-text-secondary" };
+  if (suspended) return { label: "Paused", className: "bg-error/10 text-error", rank: 4 };
+  if (!expiresAt) {
+    return { label: "No Subscription Set", className: "bg-gray-100 text-text-secondary", rank: 2 };
+  }
   const now = new Date();
-  if (expiresAt < now) return { label: `Expired ${dateFmt.format(expiresAt)}`, className: "bg-error/10 text-error" };
-  return { label: `Active Until ${dateFmt.format(expiresAt)}`, className: "bg-green/10 text-green" };
+  if (expiresAt < now) {
+    return { label: `Expired ${dateFmt.format(expiresAt)}`, className: "bg-error/10 text-error", rank: 0 };
+  }
+  const daysLeft = Math.ceil((expiresAt.getTime() - now.getTime()) / DAY_MS);
+  if (daysLeft <= ENDING_SOON_DAYS) {
+    return {
+      label: `Ends in ${daysLeft} day${daysLeft === 1 ? "" : "s"} (${dateFmt.format(expiresAt)})`,
+      className: "bg-orange/10 text-orange",
+      rank: 1,
+    };
+  }
+  return { label: `Active Until ${dateFmt.format(expiresAt)}`, className: "bg-green/10 text-green", rank: 3 };
 }
 
 export default async function PlatformLibrariesPage() {
-  const libraries = await getLibrariesWithSubscriptionStatus();
+  const rawLibraries = await getLibrariesWithSubscriptionStatus();
+  const libraries = [...rawLibraries].sort((a, b) => {
+    const rankA = statusOf(a.subscriptionExpiresAt, a.suspended).rank;
+    const rankB = statusOf(b.subscriptionExpiresAt, b.suspended).rank;
+    if (rankA !== rankB) return rankA - rankB;
+    const expiryA = a.subscriptionExpiresAt?.getTime() ?? Infinity;
+    const expiryB = b.subscriptionExpiresAt?.getTime() ?? Infinity;
+    if (expiryA !== expiryB) return expiryA - expiryB;
+    return b.createdAt.getTime() - a.createdAt.getTime();
+  });
 
   return (
     <div className="space-y-6">

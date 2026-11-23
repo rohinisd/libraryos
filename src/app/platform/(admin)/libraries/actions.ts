@@ -15,10 +15,14 @@ import {
   type ActionState,
 } from "@/lib/validation";
 
-// Platform-admin-created libraries — unlike self-registration (registerLibrary
-// in app/(auth)/actions.ts), these get no automatic trial. subscriptionExpiresAt
-// stays null (unrestricted) until you record their first payment via the
-// "Record Payment" button on the library's own page, on whatever terms you agree.
+// Platform-admin-created libraries get a 1-month free trial, same mechanism
+// self-registration uses (subscriptionExpiresAt), so the library automatically
+// shows up as "Active Until <date>" then "Expired" on /platform/libraries —
+// that status badge IS the tracking: libraries nearing/past this date are the
+// ones to follow up with about subscribing. Record a real payment any time
+// via "Record Payment" to extend it on whatever terms you agree.
+const PLATFORM_TRIAL_DAYS = 30;
+
 export async function createLibraryAsPlatformAdmin(
   _prev: ActionState,
   formData: FormData,
@@ -44,7 +48,12 @@ export async function createLibraryAsPlatformAdmin(
 
   const library = await db.$transaction(async (tx) => {
     const library = await tx.library.create({
-      data: { businessName, businessAddress: businessAddress || null, publicToken: createPublicToken() },
+      data: {
+        businessName,
+        businessAddress: businessAddress || null,
+        publicToken: createPublicToken(),
+        subscriptionExpiresAt: new Date(Date.now() + PLATFORM_TRIAL_DAYS * 24 * 60 * 60 * 1000),
+      },
     });
 
     await tx.shift.createMany({

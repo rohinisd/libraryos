@@ -24,6 +24,10 @@ export default async function PlatformLibraryDetailPage({
 
   const now = new Date();
   const expired = library.subscriptionExpiresAt ? library.subscriptionExpiresAt < now : null;
+  const daysLeft = library.subscriptionExpiresAt
+    ? Math.ceil((library.subscriptionExpiresAt.getTime() - now.getTime()) / (24 * 60 * 60 * 1000))
+    : null;
+  const endingSoon = !expired && daysLeft !== null && daysLeft <= 7;
 
   return (
     <div className="space-y-6">
@@ -47,8 +51,13 @@ export default async function PlatformLibraryDetailPage({
                 Paused{library.suspendedAt ? ` since ${dateFmt.format(library.suspendedAt)}` : ""}
               </span>
             ) : library.subscriptionExpiresAt ? (
-              <span className={expired ? "text-error" : "text-green"}>
-                {expired ? "Expired" : "Active until"} {dateFmt.format(library.subscriptionExpiresAt)}
+              <span className={expired ? "text-error" : endingSoon ? "text-orange" : "text-green"}>
+                {expired
+                  ? "Expired"
+                  : endingSoon
+                    ? `Ends in ${daysLeft} day${daysLeft === 1 ? "" : "s"} —`
+                    : "Active until"}{" "}
+                {dateFmt.format(library.subscriptionExpiresAt)}
               </span>
             ) : (
               <span className="text-text-secondary">No subscription set</span>

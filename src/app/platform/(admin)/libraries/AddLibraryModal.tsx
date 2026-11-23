@@ -34,7 +34,7 @@ export function AddLibraryModal() {
         open={open}
         onClose={() => setOpen(false)}
         title="Add Library"
-        subtitle="You create the account and hand the owner their password directly — no email required."
+        subtitle="Starts a 1-month free trial. You create the account and hand the owner their password directly — no email required."
       >
         <form action={formAction} className="space-y-4">
           <div>
