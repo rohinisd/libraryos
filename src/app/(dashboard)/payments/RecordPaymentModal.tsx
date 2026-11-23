@@ -36,6 +36,7 @@ export function RecordPaymentModal({
   const [startDate, setStartDate] = useState(today());
   const [endDate, setEndDate] = useState(plusThirtyDays());
   const [paymentMode, setPaymentMode] = useState("CASH");
+  const [note, setNote] = useState("");
 
   useEffect(() => {
     if (submitted.current && !pending && state === null) {
@@ -50,6 +51,7 @@ export function RecordPaymentModal({
     setStartDate(today());
     setEndDate(plusThirtyDays());
     setPaymentMode("CASH");
+    setNote("");
   }
 
   return (
@@ -159,6 +161,23 @@ export function RecordPaymentModal({
                 <option value="UPI">UPI</option>
                 <option value="CARD">Card</option>
               </select>
+            </div>
+
+            <div>
+              <label className="field-label">Notes (optional)</label>
+              <textarea
+                name="note"
+                rows={2}
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+                placeholder="e.g. UPI transaction ID, sender's bank/UPI app, cheque no., etc."
+                className={`${inputClass} resize-none`}
+              />
+              {state?.fieldErrors?.note && (
+                <p className="mt-1 text-[11px] font-semibold uppercase text-error">
+                  {state.fieldErrors.note}
+                </p>
+              )}
             </div>
 
             {state?.formError && (

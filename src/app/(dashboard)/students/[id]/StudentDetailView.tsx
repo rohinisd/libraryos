@@ -272,15 +272,20 @@ export function StudentDetailView({
         ) : (
           <div className="divide-y divide-black/5">
             {sortedPayments.map((p) => (
-              <div key={p.id} className="flex flex-wrap items-center justify-between gap-2 py-3 text-sm">
-                <span className="font-bold text-green">₹{inr.format(p.amount)}</span>
-                <span className="text-text-secondary">
-                  {dateFmt(p.startDate)} – {dateFmt(p.endDate)}
-                </span>
-                <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-bold text-primary">
-                  {p.paymentMode}
-                </span>
-                <span className="text-text-muted">{dateFmt(p.paidAt)}</span>
+              <div key={p.id} className="py-3 text-sm">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <span className="font-bold text-green">₹{inr.format(p.amount)}</span>
+                  <span className="text-text-secondary">
+                    {dateFmt(p.startDate)} – {dateFmt(p.endDate)}
+                  </span>
+                  <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-bold text-primary">
+                    {p.paymentMode}
+                  </span>
+                  <span className="text-text-muted">{dateFmt(p.paidAt)}</span>
+                </div>
+                {p.note && (
+                  <p className="mt-1 text-xs italic text-text-muted">&ldquo;{p.note}&rdquo;</p>
+                )}
               </div>
             ))}
           </div>

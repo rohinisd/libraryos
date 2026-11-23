@@ -120,6 +120,7 @@ export const paymentSchema = z
     startDate: z.string().min(1, "START DATE IS REQUIRED"),
     endDate: z.string().min(1, "END DATE IS REQUIRED"),
     paymentMode: z.enum(["CASH", "ONLINE", "UPI", "CARD"]).default("CASH"),
+    note: z.string().max(500, "NOTE IS TOO LONG (MAX 500 CHARACTERS)").optional(),
   })
   .refine((data) => new Date(data.endDate) >= new Date(data.startDate), {
     message: "END DATE MUST BE ON OR AFTER START DATE",

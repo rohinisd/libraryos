@@ -108,6 +108,7 @@ export default async function PaymentsPage({ searchParams }: PageProps<"/payment
                   <th className="py-2 pr-4">Start Date</th>
                   <th className="py-2 pr-4">End Date</th>
                   <th className="py-2 pr-4">Mode</th>
+                  <th className="py-2 pr-4">Note</th>
                   <th className="py-2 pr-4">Added By</th>
                   <th className="py-2 pr-4">Payment At</th>
                 </tr>
@@ -125,6 +126,12 @@ export default async function PaymentsPage({ searchParams }: PageProps<"/payment
                       <span className="rounded-full bg-primary/10 px-2.5 py-1 text-xs font-bold text-primary">
                         {payment.paymentMode}
                       </span>
+                    </td>
+                    <td
+                      className="max-w-[200px] truncate py-3 pr-4 text-text-secondary"
+                      title={payment.note ?? undefined}
+                    >
+                      {payment.note || <span className="text-text-muted">—</span>}
                     </td>
                     <td className="py-3 pr-4 text-text-secondary">{payment.addedBy.name}</td>
                     <td className="py-3 pr-4 text-text-muted">{dateTimeFmt.format(payment.paidAt)}</td>

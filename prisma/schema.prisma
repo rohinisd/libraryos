@@ -226,6 +226,9 @@ model Payment {
   endDate     DateTime
   paymentMode String   @default("CASH")
   paidAt      DateTime @default(now())
+  // Free-form note the owner can add about this specific payment — e.g. a UPI
+  // transaction ID, sender's bank/UPI app, or any other context. Optional.
+  note        String?
 
   studentId String
   student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)

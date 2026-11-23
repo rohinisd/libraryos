@@ -14,6 +14,7 @@ export async function recordPayment(_prev: ActionState, formData: FormData): Pro
     startDate: formData.get("startDate"),
     endDate: formData.get("endDate"),
     paymentMode: formData.get("paymentMode") || undefined,
+    note: formData.get("note") || undefined,
   });
   if (!parsed.success) return { fieldErrors: fieldErrorsFrom(parsed.error) };
 
@@ -32,6 +33,7 @@ export async function recordPayment(_prev: ActionState, formData: FormData): Pro
       startDate: new Date(data.startDate),
       endDate: new Date(data.endDate),
       paymentMode: data.paymentMode,
+      note: data.note || null,
       studentId: data.studentId,
       addedById: session.userId,
       libraryId: session.libraryId,
