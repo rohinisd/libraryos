@@ -1,6 +1,7 @@
 import "server-only";
 
 import { db } from "@/lib/db";
+import { decryptField } from "@/lib/field-crypto";
 import type { Prisma } from "@/generated/prisma/client";
 
 export const PAYMENTS_PAGE_SIZE = 15;
@@ -42,7 +43,16 @@ export async function getPayments(libraryId: string, filter: PaymentListFilter) 
     db.payment.count({ where }),
   ]);
 
-  return { payments, totalCount, page, pageSize: PAYMENTS_PAGE_SIZE };
+  // db.ts's encryption extension only intercepts db.student.* calls directly —
+  // it never runs on a Student fetched as a nested `include` off another
+  // model's query, so this relation's phone comes back as raw ciphertext and
+  // must be decrypted by hand here.
+  const decrypted = payments.map((p) => ({
+    ...p,
+    student: { ...p.student, phone: decryptField(p.student.phone) },
+  }));
+
+  return { payments: decrypted, totalCount, page, pageSize: PAYMENTS_PAGE_SIZE };
 }
 
 // Most recent payments for a library, independent of any filter — used by the
