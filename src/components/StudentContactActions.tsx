@@ -52,6 +52,27 @@ export function buildFeeReminderMessage({
   return `Hi ${firstName}, just confirming your ${org} membership is active and paid till ${dateLabel}. Thank you for being with us!`;
 }
 
+// Owner-initiated, same as buildFeeReminderMessage: just builds the text for a
+// plain wa.me link (opened manually from the Payments table) — nothing is
+// sent automatically.
+export function buildPaymentConfirmationMessage({
+  fullName,
+  amount,
+  endDate,
+  libraryName,
+}: {
+  fullName: string;
+  amount: number;
+  endDate: Date | string;
+  libraryName?: string | null;
+}): string {
+  const firstName = fullName.trim().split(/\s+/)[0];
+  const org = libraryName?.trim() || "library";
+  const dateLabel = dateFmt(new Date(endDate));
+
+  return `Hi ${firstName}, we've received your payment of ₹${amount} for ${org}. Your membership is now valid till ${dateLabel}. Thank you!`;
+}
+
 export function StudentContactActions({
   fullName,
   phone,

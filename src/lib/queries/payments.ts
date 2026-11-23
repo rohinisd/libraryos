@@ -35,7 +35,7 @@ export async function getPayments(libraryId: string, filter: PaymentListFilter) 
       skip: (page - 1) * PAYMENTS_PAGE_SIZE,
       take: PAYMENTS_PAGE_SIZE,
       include: {
-        student: { select: { id: true, fullName: true } },
+        student: { select: { id: true, fullName: true, phone: true } },
         addedBy: { select: { id: true, name: true } },
       },
     }),

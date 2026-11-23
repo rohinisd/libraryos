@@ -1,7 +1,9 @@
 import Link from "next/link";
-import { GraduationCap, Calendar, ChevronLeft, ChevronRight } from "lucide-react";
+import { GraduationCap, Calendar, ChevronLeft, ChevronRight, MessageCircle } from "lucide-react";
 import { requireSession } from "@/lib/session";
 import { getPayments, getPaymentYears, getStudentsForPaymentForm } from "@/lib/queries/payments";
+import { db } from "@/lib/db";
+import { buildPaymentConfirmationMessage } from "@/components/StudentContactActions";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PaymentFilters } from "./PaymentFilters";
 import { RecordPaymentModal } from "./RecordPaymentModal";
@@ -29,10 +31,11 @@ export default async function PaymentsPage({ searchParams }: PageProps<"/payment
   const year = yearParam === "all" ? undefined : Number(yearParam);
   const month = !year || monthParam === "all" ? undefined : Number(monthParam);
 
-  const [{ payments, totalCount, pageSize }, years, students] = await Promise.all([
+  const [{ payments, totalCount, pageSize }, years, students, library] = await Promise.all([
     getPayments(session.libraryId, { year, month, page }),
     getPaymentYears(session.libraryId),
     getStudentsForPaymentForm(session.libraryId),
+    db.library.findUnique({ where: { id: session.libraryId }, select: { businessName: true } }),
   ]);
 
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
@@ -111,10 +114,20 @@ export default async function PaymentsPage({ searchParams }: PageProps<"/payment
                   <th className="py-2 pr-4">Note</th>
                   <th className="py-2 pr-4">Added By</th>
                   <th className="py-2 pr-4">Payment At</th>
+                  <th className="py-2 pr-4">Confirm</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-black/5">
-                {payments.map((payment) => (
+                {payments.map((payment) => {
+                  const confirmHref = `https://wa.me/91${payment.student.phone}?text=${encodeURIComponent(
+                    buildPaymentConfirmationMessage({
+                      fullName: payment.student.fullName,
+                      amount: payment.amount,
+                      endDate: payment.endDate,
+                      libraryName: library?.businessName,
+                    }),
+                  )}`;
+                  return (
                   <tr key={payment.id}>
                     <td className="py-3 pr-4 font-medium text-text-primary">
                       {payment.student.fullName}
@@ -135,8 +148,21 @@ export default async function PaymentsPage({ searchParams }: PageProps<"/payment
                     </td>
                     <td className="py-3 pr-4 text-text-secondary">{payment.addedBy.name}</td>
                     <td className="py-3 pr-4 text-text-muted">{dateTimeFmt.format(payment.paidAt)}</td>
+                    <td className="py-3 pr-4">
+                      <a
+                        href={confirmHref}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        title={`Send payment confirmation to ${payment.student.fullName}`}
+                        aria-label={`Send payment confirmation to ${payment.student.fullName}`}
+                        className="grid h-8 w-8 place-items-center rounded-full bg-badge-green-text text-white hover:opacity-80"
+                      >
+                        <MessageCircle size={15} />
+                      </a>
+                    </td>
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
           </div>
