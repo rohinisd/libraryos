@@ -85,6 +85,7 @@ export async function recordSubscriptionPayment(
   const parsed = recordSubscriptionPaymentSchema.safeParse({
     amount: formData.get("amount"),
     method: formData.get("method") || undefined,
+    planType: formData.get("planType") || undefined,
     monthsAdded: formData.get("monthsAdded"),
     note: formData.get("note") || undefined,
   });
@@ -114,6 +115,7 @@ export async function recordSubscriptionPayment(
         libraryId,
         amount: data.amount,
         method: data.method,
+        planType: data.planType,
         monthsAdded: data.monthsAdded,
         note: data.note || null,
         recordedById: admin.adminId,

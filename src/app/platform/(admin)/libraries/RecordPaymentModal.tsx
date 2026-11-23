@@ -5,6 +5,14 @@ import { Modal } from "@/components/ui/Modal";
 import { recordSubscriptionPayment } from "./actions";
 import type { ActionState } from "@/lib/validation";
 
+type PlanType = "MONTHLY" | "HALF_YEARLY" | "YEARLY";
+
+const PLAN_MONTHS: Record<PlanType, number> = {
+  MONTHLY: 1,
+  HALF_YEARLY: 6,
+  YEARLY: 12,
+};
+
 export function RecordPaymentModal({
   libraryId,
   libraryName,
@@ -18,6 +26,8 @@ export function RecordPaymentModal({
     null,
   );
   const submitted = useRef(false);
+  const [planType, setPlanType] = useState<PlanType>("MONTHLY");
+  const [monthsAdded, setMonthsAdded] = useState(1);
 
   useEffect(() => {
     if (submitted.current && !pending && state === null) {
@@ -77,13 +87,32 @@ export function RecordPaymentModal({
           </div>
 
           <div>
+            <label className="field-label">Plan</label>
+            <select
+              name="planType"
+              value={planType}
+              onChange={(e) => {
+                const next = e.target.value as PlanType;
+                setPlanType(next);
+                setMonthsAdded(PLAN_MONTHS[next]);
+              }}
+              className="mt-1.5 w-full rounded-xl bg-[#F8F9FF] px-3.5 py-2.5 text-sm outline-none focus:border focus:border-primary"
+            >
+              <option value="MONTHLY">Monthly</option>
+              <option value="HALF_YEARLY">6 Months</option>
+              <option value="YEARLY">Yearly</option>
+            </select>
+          </div>
+
+          <div>
             <label className="field-label">Months to Add</label>
             <input
               name="monthsAdded"
               type="number"
               min={1}
               max={60}
-              defaultValue={1}
+              value={monthsAdded}
+              onChange={(e) => setMonthsAdded(Number(e.target.value))}
               className="mt-1.5 w-full rounded-xl bg-[#F8F9FF] px-3.5 py-2.5 text-sm outline-none focus:border focus:border-primary"
             />
             {state?.fieldErrors?.monthsAdded && (
@@ -92,7 +121,8 @@ export function RecordPaymentModal({
               </p>
             )}
             <p className="mt-1 text-[11px] text-text-secondary">
-              Extends from the current expiry if still active, otherwise from today.
+              Auto-fills from Plan — adjust it for a partial or custom renewal. Extends from the
+              current expiry if still active, otherwise from today.
             </p>
           </div>
 

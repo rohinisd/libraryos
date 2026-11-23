@@ -15,6 +15,12 @@ const METHOD_LABEL: Record<string, string> = {
   BANK_TRANSFER: "Bank Transfer",
 };
 
+const PLAN_LABEL: Record<string, string> = {
+  MONTHLY: "Monthly",
+  HALF_YEARLY: "6 Months",
+  YEARLY: "Yearly",
+};
+
 export default async function PlatformLibraryDetailPage({
   params,
 }: PageProps<"/platform/libraries/[id]">) {
@@ -28,6 +34,7 @@ export default async function PlatformLibraryDetailPage({
     ? Math.ceil((library.subscriptionExpiresAt.getTime() - now.getTime()) / (24 * 60 * 60 * 1000))
     : null;
   const endingSoon = !expired && daysLeft !== null && daysLeft <= 7;
+  const currentPlan = library.subscriptionPayments[0]?.planType;
 
   return (
     <div className="space-y-6">
@@ -61,6 +68,11 @@ export default async function PlatformLibraryDetailPage({
               </span>
             ) : (
               <span className="text-text-secondary">No subscription set</span>
+            )}
+            {currentPlan && (
+              <span className="ml-2 rounded-full bg-primary/10 px-2.5 py-0.5 text-[11px] font-bold uppercase text-primary">
+                {PLAN_LABEL[currentPlan]} Plan
+              </span>
             )}
           </p>
         </div>
@@ -112,6 +124,7 @@ export default async function PlatformLibraryDetailPage({
                 <th className="px-6 py-3">Date</th>
                 <th className="px-6 py-3">Amount</th>
                 <th className="px-6 py-3">Method</th>
+                <th className="px-6 py-3">Plan</th>
                 <th className="px-6 py-3">Months Added</th>
                 <th className="px-6 py-3">Recorded By</th>
                 <th className="px-6 py-3">Note</th>
@@ -123,6 +136,7 @@ export default async function PlatformLibraryDetailPage({
                   <td className="px-6 py-3">{dateFmt.format(payment.createdAt)}</td>
                   <td className="px-6 py-3 font-semibold">₹{inr.format(payment.amount)}</td>
                   <td className="px-6 py-3">{METHOD_LABEL[payment.method] ?? payment.method}</td>
+                  <td className="px-6 py-3">{PLAN_LABEL[payment.planType] ?? payment.planType}</td>
                   <td className="px-6 py-3">{payment.monthsAdded}</td>
                   <td className="px-6 py-3">{payment.recordedBy.name}</td>
                   <td className="px-6 py-3 text-text-secondary">{payment.note ?? "—"}</td>

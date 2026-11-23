@@ -8,6 +8,12 @@ const dateFmt = new Intl.DateTimeFormat("en-IN", { day: "2-digit", month: "short
 const DAY_MS = 24 * 60 * 60 * 1000;
 const ENDING_SOON_DAYS = 7;
 
+const PLAN_LABEL: Record<string, string> = {
+  MONTHLY: "Monthly",
+  HALF_YEARLY: "6 Months",
+  YEARLY: "Yearly",
+};
+
 // Rank 0/1 (expired / ending soon) are the ones to actually follow up with —
 // sorted to the top so they can't get buried once there are many libraries.
 function statusOf(expiresAt: Date | null, suspended: boolean) {
@@ -67,6 +73,7 @@ export default async function PlatformLibrariesPage() {
                 <th className="px-6 py-4">Students</th>
                 <th className="px-6 py-4">Staff</th>
                 <th className="px-6 py-4">Subscription</th>
+                <th className="px-6 py-4">Plan</th>
                 <th className="px-6 py-4">Registered</th>
                 <th className="px-6 py-4"></th>
               </tr>
@@ -93,6 +100,11 @@ export default async function PlatformLibrariesPage() {
                       <span className={`rounded-full px-3 py-1 text-[11px] font-bold uppercase ${status.className}`}>
                         {status.label}
                       </span>
+                    </td>
+                    <td className="px-6 py-4 text-text-secondary">
+                      {library.subscriptionPayments[0]
+                        ? PLAN_LABEL[library.subscriptionPayments[0].planType]
+                        : <span className="text-text-muted">—</span>}
                     </td>
                     <td className="px-6 py-4 text-text-secondary">{dateFmt.format(library.createdAt)}</td>
                     <td className="px-6 py-4">

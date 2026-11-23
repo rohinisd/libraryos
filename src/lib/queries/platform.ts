@@ -13,6 +13,13 @@ export function getLibrariesWithSubscriptionStatus() {
       subscriptionExpiresAt: true,
       suspended: true,
       _count: { select: { students: true, users: true } },
+      // Just the latest payment's plan — the library's "current plan" shown
+      // on the list is whatever it most recently paid for.
+      subscriptionPayments: {
+        orderBy: { createdAt: "desc" },
+        take: 1,
+        select: { planType: true },
+      },
     },
   });
 }

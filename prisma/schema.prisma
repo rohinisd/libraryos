@@ -30,6 +30,12 @@ enum ShiftStatus {
   INACTIVE
 }
 
+enum PlanType {
+  MONTHLY
+  HALF_YEARLY
+  YEARLY
+}
+
 // One row per library/study-hall business — the tenant boundary.
 // Every other model hangs off libraryId so tenants never see each other's data.
 model Library {
@@ -98,6 +104,12 @@ model SubscriptionPayment {
   amount      Int
   method      String   @default("UPI")
   monthsAdded Int
+  // Which plan this payment was for (Monthly/6-Monthly/Yearly) — the
+  // library's "current plan" shown on /platform/libraries is just the
+  // planType of its most recent SubscriptionPayment. Existing rows recorded
+  // before this field existed default to MONTHLY, which is a guess, not a
+  // known fact — only payments recorded from here on are reliably labeled.
+  planType    PlanType @default(MONTHLY)
   note        String?
   createdAt   DateTime @default(now())
 

@@ -175,6 +175,7 @@ export const platformRegisterSchema = z.object({
 export const recordSubscriptionPaymentSchema = z.object({
   amount: z.coerce.number().int().min(1, "AMOUNT MUST BE GREATER THAN 0"),
   method: z.enum(["CASH", "UPI", "BANK_TRANSFER"]).default("UPI"),
+  planType: z.enum(["MONTHLY", "HALF_YEARLY", "YEARLY"]).default("MONTHLY"),
   monthsAdded: z.coerce.number().int().min(1, "MUST ADD AT LEAST 1 MONTH").max(60, "TOO MANY MONTHS AT ONCE"),
   note: z.string().optional(),
 });
